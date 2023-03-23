@@ -1,11 +1,9 @@
 
 import { createContext, useState } from 'react' 
-export const LayoutContext = createContext({}as LayoutObjectType);
+import { LayoutObjectType } from '../Interfaces.ts/AuthInterface';
 
-export interface  LayoutObjectType {
-    sidebarState:boolean,
-    setSidebarState: (value: boolean) => void; 
-}
+
+export const LayoutContext = createContext({}as LayoutObjectType);
 //Provaider
 export const LayoutProvider = ({children}:{children:any}) => {
     const [sidebarState, setSidebarState] = useState(true) 
@@ -25,3 +23,5 @@ export const LayoutProvider = ({children}:{children:any}) => {
     </div>
   )
 } 
+
+export type { LayoutObjectType };

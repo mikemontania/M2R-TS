@@ -1,8 +1,10 @@
-import { Menu } from './Interfaces.ts/MenuItems';
+import { Menu } from '../Interfaces.ts/Menu';
 import { AiOutlineUser, AiOutlineSetting } from 'react-icons/ai';
 import { MdOutlineSpaceDashboard } from 'react-icons/md';
-import { Dashboard } from './Pages/Dashboard';
-import { Usuarios } from './Pages/Usuarios';
+import { Dashboard } from '../Pages/Dashboard';
+import { Usuarios } from '../Pages/Usuarios';
+import { Configuracion } from '../Pages/Configuracion';
+import { Parametros } from '../Pages/parametros';
 export const MenuItems: Menu[] = [
     {
         name: 'Dashboard',
@@ -35,26 +37,20 @@ export const MenuItems: Menu[] = [
         Icon: AiOutlineSetting,
         items: [
             {
-                name: 'Configuración 1',
-                Component: Usuarios,
+                name: 'Configuración',
+                Component: Configuracion,
                 to: '/configuracion',
                 path: '/configuracion',
                 esRutaHome: false
             },
             {
-                name: 'Configuración 2',
-                Component: Usuarios,
-                to: '/configuracion',
-                path: '/configuracion',
+                name: 'Parametros',
+                Component: Parametros,
+                to: '/parametros',
+                path: '/parametros',
                 esRutaHome: false
             }
-            , {
-                name: 'Configuración 3',
-                Component: Usuarios,
-                to: '/configuracion',
-                path: '/configuracion',
-                esRutaHome: false
-            }
+            
         ]
     }
 ]

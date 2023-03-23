@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Item } from '../Interfaces.ts/MenuItems';
-import { MenuItems } from '../Menu';
+import { Item } from '../Interfaces.ts/Item';
+ import { MenuItems } from '../types/Menu';
 
 export const UseItems = () => {
 
