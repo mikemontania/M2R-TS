@@ -5,14 +5,14 @@ import { authReducer } from '../Login/AuthReducer';
 import { AuthService } from '../Service/auth/AuthService';
 export const AuthContext = createContext({} as ContextAuthType);
 const init = () => {
-  console.log('INIT'); 
+  console.log('INIT');
 
   const userLocal = localStorage.getItem('user');
-   const user =  (userLocal)? JSON.parse(userLocal):null; 
+  const user = (userLocal) ? JSON.parse(userLocal) : null;
   return {
     logged: !!user,
     user: user,
-  } 
+  }
 };
 
 //Provaider
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
       console.log(resp)
       if (resp.data) {
         dispatch({ type: AuthActionTypes.LOGIN, payload: resp.data as PayloadType });
-        localStorage.setItem('user', JSON.stringify(user)); 
+        localStorage.setItem('user', JSON.stringify(user));
       }
     } catch (error) {
       return false;

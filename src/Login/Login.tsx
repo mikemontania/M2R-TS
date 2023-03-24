@@ -4,10 +4,10 @@ import logo from '../assets/react.svg';
 import userIcon from '../assets/icons/account.svg';
 import passIcon from '../assets/icons/password.svg';
 import './Login.css';
- import { ContextAuthType  } from '../Interfaces.ts/AuthInterface';
+import { ContextAuthType } from '../Interfaces.ts/AuthInterface';
 import { useNavigate } from 'react-router-dom';
 export const LoginPage = () => {
-    const {  login }: ContextAuthType = useContext(AuthContext);
+    const { login }: ContextAuthType = useContext(AuthContext);
     const [auth, setAuth] = useState({ username: '', password: '' })
     const navigate = useNavigate();
 
@@ -15,11 +15,11 @@ export const LoginPage = () => {
         try {
             e.preventDefault();
             const resp = await login(auth);
-             if (resp) {
+            if (resp) {
                 navigate('/', {
                     replace: true
                 });
-            }else{
+            } else {
                 console.log('ERROR AL LOGEAR');
             }
         } catch (error) {
@@ -35,7 +35,7 @@ export const LoginPage = () => {
     }
 
     return (
-        <div className="container mt-4rem mycontainer">
+        <div className="container  mt-8r mycontainer">
             <div className="d-flex justify-content-center">
                 <div className="col-md-4 col-10">
                     <div className="shadow-sm rounded p-3">
@@ -44,10 +44,13 @@ export const LoginPage = () => {
                                 <form onSubmit={onLogin} autoComplete="off">
                                     <div className="text-center mb-2">
                                         <img
-                                            className="img-fluid"
+                                            className='imagenlogo'
                                             src={logo}
                                             alt="logo"
                                         />
+                                        <h1 className='textoLogo'>
+                                            M2R/TS
+                                        </h1>
                                     </div>
 
                                     <div className="mb-2 p-1 d-flex border rounded">
@@ -85,21 +88,21 @@ export const LoginPage = () => {
 
                                     <div className="row d-flex justify-content-between mt-3 mb-2">
                                         <div className="mb-3">
-                                            <div className="form-check ms-1">
+                                            <div className="form-check ml-3">
                                                 <input
                                                     type="checkbox"
-                                                    className="form-check-input"
+                                                    className="form-check-input  "
                                                     id="mycheckbox"
                                                 />
-                                                <label className="form-check-label" htmlFor="mycheckbox">
+                                                <label className="form-check-label  " htmlFor="mycheckbox">
                                                     Remember
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="d-grid gap-2">
+                                    <div className="d-grid gap-2 text-center ">
                                         <button type="submit" className="btn btn-primary">
-                                            Sign In
+                                            INGRESAR
                                         </button>
                                     </div>
 

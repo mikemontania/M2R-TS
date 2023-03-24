@@ -1,14 +1,23 @@
-import {   useContext, useState } from 'react'
-import { LayoutContext } from '../Context/LayoutContext';
-import { LayoutObjectType } from '../Interfaces.ts/AuthInterface';
- import { MenuItems } from '../types/Menu';
+import { Component, useContext, useState } from 'react'
+import { LayoutObjectType, LayoutContext } from '../Context/LayoutContext';
+import { MenuItems } from '../types/Menu';
 import { SidebarMenu } from './SidebarMenu';
+
 
 export const SidebarComponent = () => {
     const classNameDefault = 'hamburger hamburger--elastic mobile-toggle-nav ';
     const { sidebarState } = useContext<LayoutObjectType>(LayoutContext);
-    const [active, setActive] = useState(false);
-    console.log('sidebarState', sidebarState);
+    const [menus, setMenus] = useState(MenuItems);
+    const handleItemClick = (name: string, activo: boolean) => {
+        if (activo) {
+            setMenus(MenuItems);
+        } else {
+            const updatedItems = MenuItems.map((i) => ((i.name === name) && (i.active == false)) ? { ...i, active: true } : { ...i, active: false }
+            );
+            setMenus(updatedItems);
+        }
+    };
+
     return (
         <div className="app-sidebar sidebar-shadow">
             <div className="app-header__logo">
@@ -36,8 +45,10 @@ export const SidebarComponent = () => {
             <div className="scrollbar-sidebar">
                 <div className="app-sidebar__inner">
                     <ul className="vertical-nav-menu">
-                        {MenuItems.map(menu =>
-                            <SidebarMenu Icon={menu.Icon} name={menu.name} items={menu.items} key={menu.name} />
+                        {menus.map(menu =>
+                            <li key={menu.name} className={menu.active ? "mm-active" : ""} onClick={() => handleItemClick(menu.name, menu.active)}  >
+                                <SidebarMenu Icon={menu.Icon} name={menu.name} items={menu.items} key={menu.name} active={menu.active} />
+                            </li>
                         )}
                     </ul>
                 </div>

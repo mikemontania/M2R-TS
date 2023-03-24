@@ -1,31 +1,26 @@
+ 
 import { useState } from 'react';
+import {   AiOutlineDoubleRight } from 'react-icons/ai';
 import { NavLink } from 'react-router-dom';
-import { Menu } from '../Interfaces.ts/Menu';
-import { SidebarItems } from './SidebarItems';
-
-export const SidebarMenu = (menu: Menu) => {
-    const [active, setActive] = useState(false);
-    return (
-
-        <li key={menu.name} onClick={() => setActive(!active)} className={active ? 'mm-active' : ''}       >
-
-            <NavLink key={menu.name} aria-expanded={active} to={'#'}   >
+import { Menu } from '../Interfaces.ts/Menu'; 
+import { SidebarMenuItems } from './SidebarMenuItems';
+export const SidebarMenu = (menu: Menu) => {  
+    const [active, setActive] = useState(menu.active)
+    return ( 
+        <  > 
+            <NavLink key={menu.name} aria-expanded={active} to={'#'}  onClick={()=>setActive(!active)}  >
                 <i className="metismenu-icon">
                     <menu.Icon />
                 </i>
                 {menu.name}
-                <i className="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                <i className="metismenu-state-icon    ">
+                    <AiOutlineDoubleRight />
+                </i>
             </NavLink>
-            { 
-                menu.items.map(({ path, name, }) =>
-                    <SidebarItems key={path} path={path} active={active} name={name} />
-
-                )
-            }
-
-
-        </li>
-
+            <ul className={active ? 'mm-collapse mm-show' : 'mm-collapse '}         > 
+            <SidebarMenuItems navItems={menu.items} setMenuActive={setActive} activeMenu={active}/> 
+            </ul> 
+        </ > 
     )
 
 

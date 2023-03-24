@@ -290,3 +290,18 @@ code {
     padding-left: 0.9375rem;
   }
 }
+
+.imagenlogo{
+  width: 100px;
+  height: auto;
+  margin: 10px;
+}
+.textoLogo{
+  font-size: 35;
+}
+
+
+.mt-8r{
+margin-top: 15rem;
+
+}

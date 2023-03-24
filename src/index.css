@@ -573,7 +573,7 @@ mark,.mark{
 .img-fluid{
   max-width:100%;
   height:auto
-}
+ }
 .img-thumbnail{
   padding:.25rem;
   background-color:#fff;
@@ -8176,7 +8176,7 @@ a,button,.btn{
   font-weight:bold
 }
 .vertical-nav-menu li.mm-active>a i.metismenu-state-icon{
-  transform:rotate(-180deg)
+  transform:rotate(-270deg)
 }
 .vertical-nav-menu li a.mm-active{
   color:#343a40;

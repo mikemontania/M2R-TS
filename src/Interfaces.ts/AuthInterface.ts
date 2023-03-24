@@ -33,15 +33,6 @@ export interface AuthState  {
     payload?: PayloadType
 }
  
-export interface AuthObjectType {
-    login: () => Promise<void>,
-    authState: {},
-    logged?: boolean
-}
-
-export interface AuthBody {
-    email: string, password: string
-}
 export interface PayloadType {
     username: string,
     authdata: string,

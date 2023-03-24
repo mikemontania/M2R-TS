@@ -9,46 +9,53 @@ export const MenuItems: Menu[] = [
     {
         name: 'Dashboard',
         Icon: MdOutlineSpaceDashboard,
+        active:false,
         items: [
             {
                 name: 'Dashboard',
                 Component: Dashboard,
                 to: '/',
                 path: '/',
-                esRutaHome: true
+                esRutaHome: true,
+                active:false,
             }
         ]
     },
     {
         name: 'Usuarios',
         Icon: AiOutlineUser,
+        active:false,
         items: [
             {
                 name: 'Usuarios',
                 Component: Usuarios,
                 to: '/usuarios',
                 path: '/usuarios',
-                esRutaHome: false
+                esRutaHome: false,
+                active:false,
             }
         ]
     },
     {
         name: 'Configuración',
         Icon: AiOutlineSetting,
+        active:false,
         items: [
             {
                 name: 'Configuración',
                 Component: Configuracion,
                 to: '/configuracion',
                 path: '/configuracion',
-                esRutaHome: false
+                esRutaHome: false,
+                active:false,
             },
             {
                 name: 'Parametros',
                 Component: Parametros,
                 to: '/parametros',
                 path: '/parametros',
-                esRutaHome: false
+                esRutaHome: false,
+                active:false,
             }
             
         ]
