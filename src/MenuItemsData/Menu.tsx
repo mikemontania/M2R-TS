@@ -4,7 +4,8 @@ import { MdOutlineSpaceDashboard } from 'react-icons/md';
 import { Dashboard } from '../Pages/Dashboard';
 import { Usuarios } from '../Pages/Usuarios';
 import { Configuracion } from '../Pages/Configuracion';
-import { Parametros } from '../Pages/parametros';
+import { Parametros } from '../Pages/parametros'; 
+import Empleados from '../Pages/configuracion/Empleados';
 export const MenuItems: Menu[] = [
     {
         name: 'Dashboard',
@@ -41,6 +42,14 @@ export const MenuItems: Menu[] = [
         Icon: AiOutlineSetting,
         active:false,
         items: [
+            {
+                name: 'Funcionarios',
+                Component: Empleados,
+                to: '/empleados',
+                path: '/empleados',
+                esRutaHome: false,
+                active:false,
+            },
             {
                 name: 'Configuración',
                 Component: Configuracion,

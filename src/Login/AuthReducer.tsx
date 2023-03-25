@@ -2,7 +2,8 @@ import {   AuthAction, AuthActionTypes, AuthState } from "../Interfaces.ts/AuthI
 
  
 const initialState: AuthState = {
-    logged: false 
+    logged: false ,
+   
   };
 
 export const authReducer = (state: AuthState = initialState, action: AuthAction): AuthState => {
@@ -10,8 +11,7 @@ export const authReducer = (state: AuthState = initialState, action: AuthAction)
       case AuthActionTypes.LOGIN:
         return {
           ...state,
-          logged: true,
-          payload: action.payload,
+          logged: true, 
         };
       case AuthActionTypes.LOGOUT:
         return {

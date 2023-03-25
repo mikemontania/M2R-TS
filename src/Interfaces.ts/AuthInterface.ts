@@ -24,16 +24,14 @@ export enum AuthActionTypes {
   
   export interface AuthAction {
     type: AuthActionTypes;
-    payload?: PayloadType;
-  }
+   }
    
 
 export interface AuthState  {
-     logged: boolean,
-    payload?: PayloadType
+     logged: boolean, 
 }
  
-export interface PayloadType {
+export interface GlobalData {
     username: string,
     authdata: string,
     rol: string,
@@ -42,9 +40,8 @@ export interface PayloadType {
     sucursales: number
 } 
 export interface ContextAuthType {
-    user?: {
-        logged: boolean,
-    }
+    globalData:GlobalData | null,
+    user: AuthState,
     login: (body: User) => Promise<boolean>,
     logout: any 
 }
