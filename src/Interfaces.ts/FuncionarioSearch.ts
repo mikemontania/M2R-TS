@@ -144,7 +144,7 @@ export interface Funcionario {
     frecuenciaPago?: FrecuenciaPago;
     honorarioActual: number;
     honorariosProfesionales: any;
-    horarios?: Horarios;
+    horarios?: Horario;
     imagen: string;
     ingresoIps: string;
     salidaIps:string;
@@ -179,13 +179,13 @@ export interface Funcionario {
     tecnicaturaIncompleta: boolean;
     tipoEmpleado?: TipoEmpleado;
     tipoIps: string;
-    turno?: Turno;
+    turnos?: Turno;
     universitarioCompleto: boolean;
     universitarioIncompleto: boolean;
     viaSeleccion?: ViaSeleccion;
   }
    
-  export interface Horarios {
+  export interface Horario {
     id: number
     turnos: Turno
     subSector: SubSector 
@@ -206,6 +206,10 @@ export interface Funcionario {
   }
    
 
+  export interface SiNo {
+    id: string
+    descripcion: string
+  }
 export interface EstadoCivil {
     id: number
     descripcion: string

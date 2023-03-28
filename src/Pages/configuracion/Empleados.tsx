@@ -4,16 +4,20 @@ import { AuthContext } from '../../Context/AuthContext';
 import { ContextAuthType } from '../../Interfaces.ts/AuthInterface';
 import { get } from '../../Axios/AxiosService';
 import sinImagen from '../../Assets/legajo-sin-imagen.jpg';
-import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, OptionSelectComponent, Funcionario, OpcionSelect, Sexo } from '../../Interfaces.ts/FuncionarioSearch';
+import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, OptionSelectComponent, Funcionario, Sexo, Horario, SiNo, PorcentajeIps } from '../../Interfaces.ts/FuncionarioSearch';
 import Select from 'react-select';
 import ModalData from '../../Components/ModalData';
+import Select3 from '../../Components/Select3';
 
 const style: CSSProperties = {
     width: '242px',
     height: '200px',
 };
 
+
+
 const funcionarioInit: Funcionario = {
+
     nroTarjeta: '',
     fechaIngreso: '',
     ingresoIps: '',
@@ -72,12 +76,13 @@ const sexoArray = [{ id: 'M', descripcion: 'MASCULINO' }, { id: 'F', descripcion
 
 const Empleados = () => {
     const { globalData } = useContext<ContextAuthType>(AuthContext);
-    //Search funcionario 
-    const [funcionariosSearch, setFuncionariosSearch] = useState([]);
-    const [selectedFun, setSelectedFun] = useState(null);
-    const handleSelectChange = (selectedItem: any) => {
-        setSelectedFun(selectedItem);
-        getFuncionarioById(+selectedItem.value);
+    //Search funcionario  
+    const [funcionariosSearch, setFuncionariosSearch] = useState<any[]>([]);
+    const [funcionarioSearch, setFunSearch] = useState<FuncionarioSearch>();
+    const handleSelectChange = async (selectedItem: any) => {
+        await setFunSearch(selectedItem);
+        getFuncionarioById(selectedItem.id);
+
     };
     const [funcionario, setFuncionario] = useState<Funcionario>(funcionarioInit);
     //Tabs
@@ -85,9 +90,6 @@ const Empleados = () => {
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
     };
-
-
-
     const onChangeTextarea = (event: ChangeEvent<HTMLTextAreaElement>) => {
         setFuncionario(prev => ({
             ...prev,
@@ -101,186 +103,161 @@ const Empleados = () => {
         }))
     }
     //search Nacionalidad
-    const [nacionalidades, setNacionalidades] = useState([]);
-    const [selectedNacionalidadId, setSelectedNacionalidadId] = useState<String | null>(null);
+    const [nacionalidades, setNacionalidades] = useState<any[]>([]);
+    const [selectedNacionalidad, setNacionalidad] = useState<Nacionalidad>();
     const changeNacionalidad = (selectedItem: any) => {
-        setSelectedNacionalidadId(selectedItem);
+        setNacionalidad(selectedItem);
     };
     //search Pais
-    const [paises, setPaises] = useState([]);
-    const [selectedPaisId, setSelectedPaisId] = useState<OpcionSelect | null>(null);
+    const [paises, setPaises] = useState<any[]>([]);
+    const [selectedPais, setPais] = useState<Pais>();
     const changePais = (selectedItem: any) => {
-        setSelectedPaisId(selectedItem);
+        setPais(selectedItem);
     };
-
     //search Localidad
-    const [localidadesData, setLocalidadesData] = useState([]);
-    const [localidades, setLocalidades] = useState([]);
-    const [selectedLocalidadId, setSelectedLocalidadId] = useState<OpcionSelect | null>(null);
+    const [localidades, setLocalidades] = useState<any[]>([]);
+    const [selectedLocalidad, setLocalidad] = useState<Localidad>();
     const changeLocalidad = (selectedItem: any) => {
-        setSelectedLocalidadId(selectedItem);
+        setLocalidad(selectedItem);
         console.log(selectedItem.value)
-        const ciudadActual: Localidad[] = localidadesData.filter((c: Localidad) => c.id == +selectedItem.value)
-        if (ciudadActual[0].barrios != null) {
-            const barrios = ciudadActual[0].barrios.map(b => ({ label: b.descripcion, value: b.id.toString(), item: b }))
+        const ciudadActual: Localidad = localidades.find((c: Localidad) => c.id == selectedItem.id)
+        console.log(ciudadActual)
+        if (ciudadActual?.barrios != null) {
+            const barrios = ciudadActual.barrios
             setBarrios(barrios);
         }
     };
     //search barrios
     const [barrios, setBarrios] = useState<any[]>([]);
-    const [selectedBarrioId, setSelectedBarrioId] = useState<OpcionSelect | null>(null);
+    const [selectedBarrio, setBarrio] = useState<Barrio>();
     const changeBarrio = (selectedItem: any) => {
-        setSelectedBarrioId(selectedItem);
+        setBarrio(selectedItem);
     };
-
-
     //search sector
-    const [sectoresData, setSectoresData] = useState([]);
-    const [sectores, setSectores] = useState([]);
-    const [selectedSectorId, setSectorId] = useState<OpcionSelect | null>(null);
+    const [sectores, setSectores] = useState<any[]>([]);
+    const [selectedSector, setSector] = useState<Sector>();
     const changeSector = (selectedItem: any) => {
-        setSectorId(selectedItem);
-        console.log(sectoresData);
-        const sectorActual: Sector[] = sectoresData.filter((c: Sector) => c.id == +selectedItem.value)
-        if (sectorActual[0].subSectors != null) {
-            const subSectors = sectorActual[0].subSectors.map(b => ({ label: b.descripcion, value: b.id.toString(), item: b }))
+        setSector(selectedItem);
+        const sectorActual: Sector = sectores.find((c: Sector) => c.id == selectedItem.id)
+        if (sectorActual.subSectors != null) {
+            const subSectors = sectorActual.subSectors
             setSubsectores(subSectors)
         }
     };
-
-
     //search subSector
     const [subSectores, setSubsectores] = useState<any[]>([]);
-    const [selectedSubSectorId, setSubSectorId] = useState<OpcionSelect | null>(null);
+    const [selectedSubSector, setSubSector] = useState<SubSector>();
     const changesubSector = (selectedItem: any) => {
-        setSubSectorId(selectedItem);
+        setSubSector(selectedItem);
     };
-
-
-
     //search EstadosCiviles
-    const [estadosCiviles, setEstadosCiviles] = useState([]);
-    const [selectedEstadoCivilId, setSelectedEstadoCivilId] = useState<OpcionSelect | null>(null);
+    const [estadosCiviles, setEstadosCiviles] = useState<any[]>([]);
+    const [selectedEstadoCivil, setEstadoCivil] = useState<Estadocivil>();
     const changeEstadoCivil = (selectedItem: any) => {
-        setSelectedEstadoCivilId(selectedItem);
+        setEstadoCivil(selectedItem);
     };
-
     //search FrecuenciaPago
-    const [frecuenciasPago, setFrecuenciasPago] = useState([]);
-    const [selectedFrecuenciaPagoId, setSelectedFrecuenciaPagoId] = useState(null);
+    const [frecuenciasPago, setFrecuenciasPago] = useState<any[]>([]);
+    const [selectedFrecuenciaPago, setFrecuenciaPago] = useState<FrecuenciaPago>();
     const changeFrecuenciaPago = (selectedItem: any) => {
-        setSelectedFrecuenciaPagoId(selectedItem);
+        setFrecuenciaPago(selectedItem);
     };
-
     //search TipoEmpleado
-    const [tiposEmpleado, setTiposEmpleado] = useState([]);
-    const [selectedTipoEmpleadoId, setSelectedTipoEmpleadoId] = useState(null);
+    const [tiposEmpleado, setTiposEmpleado] = useState<any[]>([]);
+    const [selectedTipoEmpleado, setTipoEmpleado] = useState<TipoEmpleado>();
     const changeTipoEmpleado = (selectedItem: any) => {
-        setSelectedTipoEmpleadoId(selectedItem);
+        setTipoEmpleado(selectedItem);
     };
-
     //search Sexos
-    const [sexos, setSexos] = useState<OpcionSelect[] | null>(null);
-    const [selectedSexoId, setSelectedSexoId] = useState<OpcionSelect | null>(null);
+    const [sexos, setSexos] = useState<any[]>(sexoArray);
+    const [selectedSexo, setSexo] = useState<Sexo>();
     const changeSexo = (selectedItem: any) => {
-        setSelectedSexoId(selectedItem);
+        setSexo(selectedItem);
     };
-
     //search centroCosto
-    const [centroscostos, setCentroscostos] = useState([]);
-    const [selectedCentroCostoId, setSelectedCentroCostoId] = useState(null);
+    const [centroscostos, setCentroscostos] = useState<any[]>([]);
+    const [selectedCentroCosto, setCentroCosto] = useState<CentroCosto>();
     const changeCentroCosto = (selectedItem: any) => {
-        setSelectedCentroCostoId(selectedItem);
+        setCentroCosto(selectedItem);
     };
-
-
     //search sucursal
-    const [sucursales, setSucursales] = useState([]);
-    const [selectedSucursalId, setSelectedSucursalId] = useState(null);
+    const [sucursales, setSucursales] = useState<any[]>([]);
+    const [selectedSucursal, setSucursal] = useState<Sucursal>();
     const changeSucursal = (selectedItem: any) => {
-        setSelectedSucursalId(selectedItem);
+        setSucursal(selectedItem);
     };
     //search categorias
-    const [categorias, setCategorias] = useState([]);
-    const [selectedCategoriaId, setSelectedCategoriaId] = useState(null);
+    const [categorias, setCategorias] = useState<any[]>([]);
+    const [selectedCategoria, setCategoria] = useState<Categoria>();
     const changeCategoria = (selectedItem: any) => {
-        setSelectedCategoriaId(selectedItem);
+        setCategoria(selectedItem);
     };
-
     //search seleccion
-    const [selecciones, setSelecciones] = useState([]);
-    const [selectedSeleccionId, setSelectedSeleccionId] = useState(null);
+    const [selecciones, setSelecciones] = useState<any[]>([]);
+    const [selectedSeleccion, setSeleccion] = useState<Seleccion>();
     const changeSeleccion = (selectedItem: any) => {
-        setSelectedSeleccionId(selectedItem);
+        setSeleccion(selectedItem);
     };
     //search Turno
-    const [turnos, setTurnos] = useState([]);
-    const [selectedTurnoId, setSelectedTurnoId] = useState(null);
+    const [turnos, setTurnos] = useState<any[]>([]);
+    const [selectedTurno, setTurno] = useState<Turno>();
     const changeTurno = (selectedItem: any) => {
-        setSelectedTurnoId(selectedItem);
-        if (selectedTurnoId != null && selectedSubSectorId != null) {
-            getHorarios(selectedTurnoId, selectedSubSectorId)
-
+        setTurno(selectedItem);
+        console.log(selectedItem);
+        if (selectedTurno != null && selectedSubSector != null) {
+            getHorarios(selectedTurno.id, selectedSubSector.id)
         }
     };
-
     //search Horarios
-    const [horarios, setHorarios] = useState([]);
-    const [selectedHorarioId, setSelectedHorarioId] = useState(null);
+    const [horarios, setHorarios] = useState<any[]>([]);
+    const [selectedHorario, setHorario] = useState<Horario>();
     const changeHorario = (selectedItem: any) => {
-        setSelectedHorarioId(selectedItem);
+        setHorario(selectedItem);
     };
-
     //sino object
-    const [siNoList, setSiNoList] = useState([{ value: 'S', label: 'SI' }, { value: 'N', label: 'NO' }]);
+    const [siNoList, setSiNoList] = useState<any[]>([{ id: 'S', descripcion: 'SI' }, { id: 'N', descripcion: 'NO' }]);
     //search controlarHorario
-    const [selectedControlHorarioId, setSelectedControlHorarioId] = useState(null);
+    const [selectedControlHorario, setControlHorario] = useState<SiNo>();
     const changeControlHorario = (selectedItem: any) => {
-        setSelectedControlHorarioId(selectedItem);
+        setControlHorario(selectedItem);
     };
     //search activo
-    const [selectedActivoId, setSelectedActivoId] = useState(null);
+    const [selectedActivo, setActivo] = useState<SiNo>();
     const changeActivo = (selectedItem: any) => {
-        setSelectedActivoId(selectedItem);
+        setActivo(selectedItem);
     };
     //search FamiliarEmpresa
-    const [selectedFamiliarEmpresa, setSelectedFamiliarEmpresa] = useState(null);
+    const [selectedFamiliarEmpresa, setFamiliarEmpresa] = useState();
     const changeFamiliarEmpresa = (selectedItem: any) => {
-        setSelectedFamiliarEmpresa(selectedItem);
+        setFamiliarEmpresa(selectedItem);
     };
     //search bonificacion
-    const [selectedBonificacionId, setSelectedBonificacionId] = useState(null);
+    const [selectedBonificacion, setBonificacion] = useState();
     const changeBonificacion = (selectedItem: any) => {
-        setSelectedBonificacionId(selectedItem);
+        setBonificacion(selectedItem);
     };
 
     //search TipoIps
-    const [selectedTipoIps, setSelectedTipoIps] = useState(null);
+    const [tiposIps, setTiposIps] = useState<any[]>([{ id: 'MENSUAL', descripcion: 'MENSUAL' }, { id: 'JORNAL', descripcion: 'JORNAL' }]);
+    const [selectedTipoIps, setTipoIps] = useState();
     const changeTipoIps = (selectedItem: any) => {
-        setSelectedTipoIps(selectedItem);
-    };
+        setTipoIps(selectedItem);
+    }; 
     //search PorcentajeIps
-    const [porcentajeIps, setPorcentajeIps] = useState(null);
+    const [porcentajesIps, setPorcentajesIps] = useState<any[]>([{ id: '1', descripcion: 'EN BASE AL 9%' }, { id: '2', descripcion: 'EN BASE AL 25,5%' }, { id: '3', descripcion: 'NO POSEE IPS' },]);
+    const [porcentajeIps, setPorcentajeIps] = useState<PorcentajeIps>();
     const changePorcentajeIps = (selectedItem: any) => {
         setPorcentajeIps(selectedItem);
     };
-
-
     const enviarForm = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         // Aquí puedes hacer lo que quieras con los datos del formulario
         console.log('Formulario enviado');
     };
-
-
     const getFuncionarios = async () => {
         try {
             const response = await get('/private/empleados/porEmpresa/' + globalData?.empresas);
-            const selectFun = response.data.map((funcionario: FuncionarioSearch) => ({
-                label: funcionario.concat,
-                value: funcionario.id.toString(),
-            }))
-            setFuncionariosSearch(selectFun);
+            setFuncionariosSearch(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -289,60 +266,8 @@ const Empleados = () => {
     const getFuncionarioById = async (id: number) => {
         try {
             const response = await get('/private/empleados/' + id);
-            setFuncionario(response.data as Funcionario);
             console.log(response.data);
-            console.log('asignar select');
-            if (funcionario?.pais) {
-                setSelectedPaisId({
-                    value: funcionario?.pais.id.toString(),
-                    label: funcionario?.pais.descripcion,
-                    item: funcionario?.pais
-                });
-            }
-
- 
-            if (funcionario?.nacionalidad) {
-               const element =  {
-                    value: funcionario?.nacionalidad.id.toString(),
-                    label: funcionario?.nacionalidad.descripcion,
-                    item: funcionario?.nacionalidad
-                } 
-                setSelectedNacionalidadId(element.value);
-            }
-
-
-            if (funcionario?.sexo) {
-                setSelectedSexoId({
-                    value: funcionario?.sexo.id.toString(),
-                    label: funcionario?.sexo.descripcion,
-                    item: funcionario?.sexo
-                });
-            }
-
-            if (funcionario?.estadoCivil) {
-                setSelectedEstadoCivilId({
-                    value: funcionario?.estadoCivil.id.toString(),
-                    label: funcionario?.estadoCivil.descripcion,
-                    item: funcionario?.estadoCivil
-                });
-            }
-            if (funcionario?.localidad) {
-                setSelectedLocalidadId({
-                    value: funcionario?.localidad.id.toString(),
-                    label: funcionario?.localidad.descripcion,
-                    item: funcionario?.localidad
-                });
-            }
-            if (funcionario?.barrio) {
-                setSelectedBarrioId({
-                    value: funcionario?.barrio.id.toString(),
-                    label: funcionario?.barrio.descripcion,
-                    item: funcionario?.barrio
-                });
-            }
-
-
-            //setFuncionario(response)
+            await setFuncionario(response.data as Funcionario);
         } catch (error) {
             console.error(error);
         }
@@ -350,11 +275,10 @@ const Empleados = () => {
 
 
 
-    const getHorarios = async (turno: OptionSelectComponent, subSector: OptionSelectComponent) => {
-        const turnoId: number = +turno.value;
-        const subsectorId: number = +subSector.value;
+    const getHorarios = async (turnoid: number, subSectorid: number) => {
+
         try {
-            const response = await get('/private/horarios/' + turnoId + '/' + subsectorId);
+            const response = await get('/private/horarios/' + turnoid + '/' + subSectorid);
             console.log(response.data);
             const select = response.data.map((h: any) => ({
                 label: h.concat,
@@ -369,23 +293,10 @@ const Empleados = () => {
 
     }
 
-    const getSexo = async () => {
-        const select = sexoArray.map((s: Sexo) => ({ label: s.descripcion, value: s.id.toString(), item: s }))
-        if (select) {
-            setSexos(select);
-        }
-    }
-
     const getPaises = async () => {
         try {
             const response = await get('/private/paises/');
-            const selectPaises = response.data.map((p: Pais) => ({
-                label: p.descripcion,
-                value: p.id.toString(),
-                item: p
-
-            }))
-            setPaises(selectPaises);
+            setPaises(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -393,12 +304,7 @@ const Empleados = () => {
     const getSelecciones = async () => {
         try {
             const response = await get('/private/seleccion/');
-            const select = response.data.map((p: Seleccion) => ({
-                label: p.descripcion,
-                value: p.id.toString(),
-                item: p
-            }))
-            setSelecciones(select);
+            setSelecciones(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -406,13 +312,8 @@ const Empleados = () => {
 
     const getNacionalidades = async () => {
         try {
-            const response = await get('/private/nacionalidades/');
-            const selectNacionalidad = response.data.map((nacionalidad: Nacionalidad) => ({
-                label: nacionalidad.descripcion,
-                value: nacionalidad.id.toString(),
-                item: nacionalidad
-            }))
-            setNacionalidades(selectNacionalidad);
+            const response = await get('/private/nacionalidades/'); 
+            setNacionalidades(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -421,12 +322,7 @@ const Empleados = () => {
     const getCategorias = async () => {
         try {
             const response = await get('/private/categorias/');
-            const select = response.data.map((cat: Categoria) => ({
-                label: cat.descripcion,
-                value: cat.id.toString(),
-                item: cat
-            }))
-            setCategorias(select);
+            setCategorias(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -436,14 +332,7 @@ const Empleados = () => {
     const getLocalidad = async () => {
         try {
             const response = await get('/private/localidad/');
-            setLocalidadesData(response.data);
-            const selectLocalidades = response.data.map((localidad: Localidad) => ({
-                label: localidad.descripcion,
-                value: localidad.id.toString(),
-                item: localidad
-            }))
-            //console.log(selectLocalidades)
-            setLocalidades(selectLocalidades);
+            setLocalidades(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -452,12 +341,7 @@ const Empleados = () => {
     const getCentroCosto = async () => {
         try {
             const response = await get('/private/centroCosto/');
-            const selectCeCo = response.data.map((centroCosto: CentroCosto) => ({
-                label: centroCosto.concat,
-                value: centroCosto.codigo,
-                item: centroCosto
-            }))
-            setCentroscostos(selectCeCo);
+            setCentroscostos(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -465,12 +349,7 @@ const Empleados = () => {
     const getSucursales = async () => {
         try {
             const response = await get('/private/sucursales/porEmpresa/' + globalData?.empresas);
-            const selectSuc = response.data.map((sucursal: Sucursal) => ({
-                label: sucursal.descripcion,
-                value: sucursal.id.toString(),
-                item: sucursal
-            }))
-            setSucursales(selectSuc);
+            setSucursales(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -479,13 +358,7 @@ const Empleados = () => {
     const getSectores = async () => {
         try {
             const response = await get('/private/sector/porEmpresa/' + globalData?.empresas);
-            setSectoresData(response.data)
-            const selectSector = response.data.map((sector: Sector) => ({
-                label: sector.descripcion,
-                value: sector.id.toString(),
-                item: sector
-            }))
-            setSectores(selectSector);
+            setSectores(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -495,12 +368,7 @@ const Empleados = () => {
     const getEstadosCiviles = async () => {
         try {
             const response = await get('/private/estadoCivil/');
-            const estadoCiviles = response.data.map((estadoCivil: Estadocivil) => ({
-                label: estadoCivil.descripcion,
-                value: estadoCivil.id.toString(),
-                item: estadoCivil
-            }))
-            setEstadosCiviles(estadoCiviles);
+            setEstadosCiviles(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -508,12 +376,7 @@ const Empleados = () => {
     const getFrecuenciaPago = async () => {
         try {
             const response = await get('/private/frecuenciaPago/');
-            const f = response.data.map((frecuenciaPago: FrecuenciaPago) => ({
-                label: frecuenciaPago.descripcion,
-                value: frecuenciaPago.id.toString(),
-                item: frecuenciaPago
-            }))
-            setFrecuenciasPago(f);
+            setFrecuenciasPago(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -523,8 +386,7 @@ const Empleados = () => {
         console.log('getTiposEmpleado')
         try {
             const response = await get('/private/tipoEmpleado/');
-            const tipoEmpleado = response.data.map((t: TipoEmpleado) => ({ label: t.descripcion, value: t.id.toString(), }))
-            setTiposEmpleado(tipoEmpleado);
+            setTiposEmpleado(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -533,12 +395,7 @@ const Empleados = () => {
     const getTurnos = async () => {
         try {
             const response = await get('/private/turnos/listarall/' + globalData?.empresas);
-            const select = response.data.map((turno: Turno) => ({
-                label: turno.descripcion,
-                value: turno.id.toString(),
-                item: turno
-            }))
-            setTurnos(select);
+            setTurnos(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -549,7 +406,6 @@ const Empleados = () => {
     useEffect(() => {
         getFuncionarios();
         getPaises();
-        getSexo();
         getNacionalidades();
         getEstadosCiviles()
         getLocalidad();
@@ -562,6 +418,32 @@ const Empleados = () => {
         getTiposEmpleado();
         getFrecuenciaPago();
     }, []);
+
+
+    useEffect(() => {
+        setPais(funcionario?.pais);
+        setNacionalidad(funcionario?.nacionalidad);
+        setSexo((funcionario?.sexo) ? sexos.find(s => s.id == funcionario?.sexo) : '');
+        setControlHorario((funcionario?.controlarHorario) ? siNoList.find(s => s.id == funcionario?.controlarHorario) : '');
+        setActivo((funcionario?.activo) ? siNoList.find(s => s.id == funcionario?.activo) : '');
+        setBonificacion((funcionario?.bonificacion) ? siNoList.find(s => s.id == funcionario?.bonificacion) : '');
+        setEstadoCivil(funcionario?.estadoCivil);
+        setTurno(funcionario?.turnos);
+        setLocalidad(funcionario?.localidad);
+        setBarrio(funcionario?.barrio);
+        setCentroCosto(funcionario?.centroCosto);
+        setCategoria(funcionario?.categoria);
+        setSucursal(funcionario?.sucursales);
+        setSector(funcionario?.sector);
+        setSubSector(funcionario?.subSector);
+        setSeleccion(funcionario?.viaSeleccion);
+        setFrecuenciaPago(funcionario?.frecuenciaPago);
+        setTipoEmpleado(funcionario?.tipoEmpleado);
+        setTipoIps((funcionario?.tipoIps) ? tiposIps.find(s => s.id == funcionario?.tipoIps) : '');
+        setPorcentajeIps(funcionario?.porcentajeIps);
+        console.log(funcionario)
+    }, [funcionario]);
+
 
 
 
@@ -714,17 +596,10 @@ const Empleados = () => {
               .error(function (response) {
                 console.log('error al eliminar honorario: ' + response);
               });
-      
-            //  $('#dialog_salarios').modal('hide');
-          };
-      
-    
+       
+          }; 
     
      */
-
-
-
-
 
     return (
         <>
@@ -738,21 +613,15 @@ const Empleados = () => {
                 <div className='card-body'>
                     <div className='row'>
                         <div className='col-lg-6 col-md-12 col-sm-12'>
-
-                            <Select
-                                placeholder='Buscar funcionario'
-                                value={selectedFun}
-                                onChange={handleSelectChange}
-                                options={funcionariosSearch}
-                            />
+                            {funcionariosSearch ? (<Select3 options={funcionariosSearch} valueKey="id" labelKey="concat" value={funcionarioSearch} onChange={handleSelectChange} placeholder="Seleccione funcionario"
+                            />) : (
+                                <div>Cargando...</div>
+                            )}
                         </div>
 
                     </div>
                 </div>
             </div>
-
-
-
             <div className='mb-3 card' >
                 <div className='card-header-tab card-header'>
                     <div className='card-header-title'>
@@ -850,7 +719,9 @@ const Empleados = () => {
                                                     <label htmlFor='pais' className='form-label'>
                                                         Pais de Nacimiento
                                                     </label>
-                                                    <Select placeholder='Seleccione Pais' value={selectedPaisId} onChange={changePais} options={paises} id='pais' name='pais' />
+                                                    {paises ? (
+                                                        <Select3 options={paises} valueKey="id" labelKey="descripcion" value={selectedPais} onChange={changePais} placeholder="Seleccione pais" />) : (<div>Cargando...</div>)}
+
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -858,7 +729,9 @@ const Empleados = () => {
                                                     <label htmlFor='nacionalidad' className='form-label'>
                                                         Nacionalidad:
                                                     </label>
-                                                    <Select placeholder='Seleccione Nacionalidad' value={selectedNacionalidadId} onChange={changeNacionalidad} options={nacionalidades} id='nacionalidad' name='nacionalidad' />
+
+                                                    {nacionalidades ? (<Select3 options={nacionalidades} valueKey="id" labelKey="descripcion" value={selectedNacionalidad} onChange={changeNacionalidad} placeholder="Seleccione Nacionalidad"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -880,7 +753,8 @@ const Empleados = () => {
                                                     <label htmlFor='Localidad' className='form-label'>
                                                         Localidad:
                                                     </label>
-                                                    <Select placeholder='Seleccione Localidad' value={selectedLocalidadId} onChange={changeLocalidad} options={localidades} id='Localidad' name='Localidad' />
+                                                    {localidades ? (<Select3 options={localidades} valueKey="id" labelKey="descripcion" value={selectedLocalidad} onChange={changeLocalidad} placeholder="Seleccione Nacionalidad"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -888,7 +762,8 @@ const Empleados = () => {
                                                     <label htmlFor='barrio' className='form-label'>
                                                         Barrio:
                                                     </label>
-                                                    <Select placeholder='Seleccione Barrio' value={selectedBarrioId} onChange={changeBarrio} options={barrios} id='barrio' name='barrio' />
+                                                    {barrios ? (<Select3 options={barrios} valueKey="id" labelKey="descripcion" value={selectedBarrio} onChange={changeBarrio} placeholder="Seleccione Barrio"
+                                                    />) : (<div>Cargando...</div>)}
 
                                                 </div>
                                             </div>
@@ -936,7 +811,8 @@ const Empleados = () => {
                                                     <label htmlFor='estadoCivil' className='form-label'>
                                                         EstadoCivil
                                                     </label>
-                                                    <Select placeholder='Seleccione Estado civil' value={selectedEstadoCivilId} onChange={changeEstadoCivil} options={estadosCiviles} id='estadoCivil' name='estadoCivil' />
+                                                    {estadosCiviles ? (<Select3 options={estadosCiviles} valueKey="id" labelKey="descripcion" value={selectedEstadoCivil} onChange={changeEstadoCivil} placeholder="Seleccione Estado"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -944,11 +820,12 @@ const Empleados = () => {
                                                     <label htmlFor='sexo' className='form-label'>
                                                         Sexo
                                                     </label>
-                                                    {sexos ? (
-                                                        <Select placeholder='Seleccione Sexo' value={selectedSexoId} onChange={changeSexo} options={sexos} id='sexo' name='sexo' />
-                                                    ) : (
-                                                        <div>Cargando...</div>
-                                                    )}                                                </div>
+
+
+                                                    {sexos ? (<Select3 options={sexos} valueKey="id" labelKey="descripcion" value={selectedSexo} onChange={changeSexo} placeholder="Seleccione Estado"
+                                                    />) : (<div>Cargando...</div>)}
+
+                                                </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
                                                 <div className='position-relative form-group'>
@@ -983,7 +860,7 @@ const Empleados = () => {
                         </div>
                     </div>
                     <div className={activeTab === 'tab2' ? 'tab-pane fade show active' : 'tab-pane fade'}  >
-                        {/*   <div className='card-body'>
+                        <div className='card-body'>
                             <div className='row'>
                                 <div className='col-lg-3 col-md-12' >
                                     <div className=' mt-6 mb-3 card-body d-flex justify-content-center'>
@@ -992,7 +869,7 @@ const Empleados = () => {
                                     <div className=' mt-6 mb-3 card-body d-flex justify-content-center'>
                                         <div className='caption'>
                                             <p>
-                                                <input   onChange={ onChange }type='file' className='form-control' id='uploadedfile' file-model='myFile' placeholder=' ' />
+                                                <input type='file' className='form-control' id='uploadedfile' file-model='myFile' placeholder=' ' />
                                             </p>
                                         </div>
                                     </div>
@@ -1005,7 +882,8 @@ const Empleados = () => {
                                                     <label htmlFor='seleccion' className='form-label'>
                                                         Metodo de Seleccion:
                                                     </label>
-                                                    <Select placeholder='Seleccione Metodo' value={selectedSeleccionId} onChange={changeSeleccion} options={selecciones} id='seleccion' name='seleccion' />
+                                                    {selecciones ? (<Select3 options={selecciones} valueKey="id" labelKey="descripcion" value={selectedSeleccion} onChange={changeSeleccion} placeholder="Seleccione selección"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1013,7 +891,8 @@ const Empleados = () => {
                                                     <label htmlFor='categoria' className='form-label'>
                                                         Cargo:
                                                     </label>
-                                                    <Select placeholder='Seleccione Cargo' value={selectedCategoriaId} onChange={changeCategoria} options={categorias} id='categoria' name='categoria' />
+                                                    {categorias ? (<Select3 options={categorias} valueKey="id" labelKey="descripcion" value={selectedCategoria} onChange={changeCategoria} placeholder="Seleccione cargo"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4'>
@@ -1021,11 +900,8 @@ const Empleados = () => {
                                                     <label htmlFor='centroCosto' className='form-label'>
                                                         Centro costo:
                                                     </label>
-                                                    <Select placeholder='Seleccione Centro costo'
-                                                        value={selectedCentroCostoId}
-                                                        onChange={changeCentroCosto}
-                                                        options={centroscostos}
-                                                    />
+                                                    {centroscostos ? (<Select3 options={centroscostos} valueKey="codigo" labelKey="concat" value={selectedCentroCosto} onChange={changeCentroCosto} placeholder="Seleccione CentroCosto"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                         </div>
@@ -1036,7 +912,8 @@ const Empleados = () => {
                                                     <label htmlFor='sucursal' className='form-label'>
                                                         Sucursal
                                                     </label>
-                                                    <Select placeholder='Seleccione sucursal' value={selectedSucursalId} onChange={changeSucursal} options={sucursales} id='sucursal' name='sucursal' />
+                                                    {sucursales ? (<Select3 options={sucursales} valueKey="id" labelKey="descripcion" value={selectedSucursal} onChange={changeSucursal} placeholder="Seleccione sucursal"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1044,7 +921,8 @@ const Empleados = () => {
                                                     <label htmlFor='sector' className='form-label'>
                                                         Sector:
                                                     </label>
-                                                    <Select placeholder='Seleccione Sector' value={selectedSectorId} onChange={changeSector} options={sectores} id='sector' name='sector' />
+                                                    {sectores ? (<Select3 options={sectores} valueKey="id" labelKey="descripcion" value={selectedSector} onChange={changeSector} placeholder="Seleccione sector"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1052,11 +930,8 @@ const Empleados = () => {
                                                     <label htmlFor='subSector' className='form-label'>
                                                         Sub sector:
                                                     </label>
-                                                    <Select placeholder='Seleccione sub sector'
-                                                        value={selectedSubSectorId}
-                                                        onChange={changesubSector}
-                                                        options={subSectores}
-                                                    />
+                                                    {subSectores ? (<Select3 options={subSectores} valueKey="id" labelKey="descripcion" value={selectedSubSector} onChange={changesubSector} placeholder="Seleccione sub sector"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                         </div>
@@ -1067,7 +942,8 @@ const Empleados = () => {
                                                     <label htmlFor='controlarHorario' className='form-label'>
                                                         Controlar Horario
                                                     </label>
-                                                    <Select placeholder='SI/NO' value={selectedControlHorarioId} onChange={changeControlHorario} options={siNoList} id='controlarHorario' name='controlarHorario' />
+                                                    {siNoList ? (<Select3 options={siNoList} valueKey="id" labelKey="descripcion" value={selectedControlHorario} onChange={changeControlHorario} placeholder="Control Horario"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1075,8 +951,8 @@ const Empleados = () => {
                                                     <label htmlFor='turno' className='form-label'>
                                                         Turno:
                                                     </label>
-                                                    <Select placeholder='Seleccione turno' value={selectedTurnoId} onChange={changeTurno} options={turnos} id='turno' name='turno' />
-
+                                                    {turnos ? (<Select3 options={turnos} valueKey="id" labelKey="descripcion" value={selectedTurno} onChange={changeTurno} placeholder="Seleccione Turno"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1084,7 +960,8 @@ const Empleados = () => {
                                                     <label htmlFor='horario' className='form-label'>
                                                         Horario:
                                                     </label>
-                                                    <Select placeholder='Seleccione horario' value={selectedHorarioId} onChange={changeHorario} options={horarios} id='horario' name='horario' />
+                                                    {horarios ? (<Select3 options={horarios} valueKey="id" labelKey="descripcion" value={selectedHorario} onChange={changeHorario} placeholder="Seleccione Horario"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                         </div>
@@ -1097,8 +974,8 @@ const Empleados = () => {
                                                     <label htmlFor='fechaIngreso' className='form-label'>
                                                         Fecha Ingreso:
                                                     </label>
-                                                    <input
-                                                        type='date' className='form-control' id='fechaIngreso' name='fechaIngreso' value={funcionario?.fechaIngreso} required />
+                                                    <input onChange={onChangeInput} type='date' className='form-control' id='fechaIngreso' name='fechaIngreso' value={funcionario?.fechaIngreso || ''} required />
+
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1106,7 +983,7 @@ const Empleados = () => {
                                                     <label htmlFor='fechaSalida' className='form-label'>
                                                         Fecha Salida:
                                                     </label>
-                                                    <input   onChange={ onChange }type='date' className='form-control' id='fechaSalida' name='fechaSalida' value={funcionario?.fechaSalida} />
+                                                    <input onChange={onChangeInput} type='date' className='form-control' id='fechaSalida' name='fechaSalida' value={funcionario?.fechaSalida || ''} required />
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1114,7 +991,7 @@ const Empleados = () => {
                                                     <label htmlFor='ctaBanco' className='form-label'>
                                                         Nro cuenta Banco:
                                                     </label>
-                                                    <input   onChange={ onChange }type='text' className='form-control' id='ctaBanco' name='ctaBanco' value={funcionario?.ctaBanco} />
+                                                    <input onChange={onChangeInput} type='text' className='form-control' id='ctaBanco' name='ctaBanco' value={funcionario?.ctaBanco || ''} required />
                                                 </div>
                                             </div>
                                         </div>
@@ -1125,7 +1002,7 @@ const Empleados = () => {
                                                     <label htmlFor='ingresoIps' className='form-label'>
                                                         Ingreso Ips:
                                                     </label>
-                                                    <input   onChange={ onChange }type='date' className='form-control' id='ingresoIps' name='ingresoIps' value={funcionario?.ingresoIps} />
+                                                    <input onChange={onChangeInput} type='date' className='form-control' id='ingresoIps' name='ingresoIps' value={funcionario?.ingresoIps || ''} required />
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1133,7 +1010,7 @@ const Empleados = () => {
                                                     <label htmlFor='salidaIps' className='form-label'>
                                                         Ingreso Salida:
                                                     </label>
-                                                    <input   onChange={ onChange }type='date' className='form-control' id='salidaIps' name='salidaIps' value={funcionario?.salidaIps} />
+                                                    <input onChange={onChangeInput} type='date' className='form-control' id='salidaIps' name='salidaIps' value={funcionario?.salidaIps || ''} required />
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1141,7 +1018,7 @@ const Empleados = () => {
                                                     <label htmlFor='interno' className='form-label'>
                                                         Nro Interno:
                                                     </label>
-                                                    <input   onChange={ onChange }type='text' className='form-control' id='interno' name='interno' value={funcionario?.interno} />
+                                                    <input onChange={onChangeInput} type='text' className='form-control' id='interno' name='interno' value={funcionario?.interno || ''} required />
                                                 </div>
                                             </div>
 
@@ -1154,7 +1031,8 @@ const Empleados = () => {
                                                     <label htmlFor='activo' className='form-label'>
                                                         Activo:
                                                     </label>
-                                                    <Select placeholder='SI/NO' value={selectedActivoId} onChange={changeActivo} options={siNoList} id='activo' name='activo' />
+                                                    {siNoList ? (<Select3 options={siNoList} valueKey="id" labelKey="descripcion" value={selectedActivo} onChange={changeActivo} placeholder="Seleccione Activo"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1162,7 +1040,8 @@ const Empleados = () => {
                                                     <label htmlFor='bonificacion' className='form-label'>
                                                         Bonificación:
                                                     </label>
-                                                    <Select placeholder='SI/NO' value={selectedBonificacionId} onChange={changeBonificacion} options={siNoList} id='bonificacion' name='bonificacion' />
+                                                    {siNoList ? (<Select3 options={siNoList} valueKey="id" labelKey="descripcion" value={selectedBonificacion} onChange={changeBonificacion} placeholder="Seleccione Bonificacion"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1170,7 +1049,7 @@ const Empleados = () => {
                                                     <label htmlFor='corporativo' className='form-label'>
                                                         Nro Corporativo:
                                                     </label>
-                                                    <input   onChange={ onChange }type='text' className='form-control' id='corporativo' name='corporativo' value={funcionario?.corporativo} />
+                                                    <input onChange={onChangeInput} type='text' className='form-control' id='corporativo' name='corporativo' value={funcionario?.corporativo || ''} required />
                                                 </div>
                                             </div>
                                         </div>
@@ -1181,7 +1060,8 @@ const Empleados = () => {
                                                     <label htmlFor='frecuenciaPago' className='form-label'>
                                                         Frecuencia Pago:
                                                     </label>
-                                                    <Select placeholder='Seleccione Frecuencia' value={selectedFrecuenciaPagoId} onChange={changeFrecuenciaPago} options={frecuenciasPago} id='frecuenciaPago' name='frecuenciaPago' />
+                                                    {frecuenciasPago ? (<Select3 options={frecuenciasPago} valueKey="id" labelKey="descripcion" value={selectedFrecuenciaPago} onChange={changeFrecuenciaPago} placeholder="Seleccione frecuencia de pago"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1189,7 +1069,8 @@ const Empleados = () => {
                                                     <label htmlFor='tipoEmpleado' className='form-label'>
                                                         Tipo Empleado:
                                                     </label>
-                                                    <Select placeholder='Seleccione Tipo empleado' value={selectedTipoEmpleadoId} onChange={changeTipoEmpleado} options={tiposEmpleado} id='tipoEmpleado' name='tipoEmpleado' />
+                                                    {tiposEmpleado ? (<Select3 options={tiposEmpleado} valueKey="id" labelKey="descripcion" value={selectedTipoEmpleado} onChange={changeTipoEmpleado} placeholder="Seleccione frecuencia de pago"
+                                                    />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1197,9 +1078,7 @@ const Empleados = () => {
                                                     <label htmlFor='tipoIps' className='form-label'>
                                                         Tipo Ips:
                                                     </label>
-                                                    <Select placeholder='JORNAL/MENSUAL' value={selectedTipoIps} onChange={changeTipoIps}
-                                                        options={[{ value: 'MENSUAL', label: 'MENSUAL' }, { value: 'JORNAL', label: 'JORNAL' }]}
-                                                        id='tipoIps' name='tipoIps' />
+                                                    <Select3 options={tiposIps} valueKey="id" labelKey="descripcion" value={selectedTipoIps} onChange={changeTipoIps} placeholder="Seleccione tipo ips" />
                                                 </div>
                                             </div>
                                         </div>
@@ -1210,13 +1089,7 @@ const Empleados = () => {
                                                     <label htmlFor='porcentajeIps' className='form-label'>
                                                         Porcentaje Ips:
                                                     </label>
-                                                    <Select placeholder='Seleccione % ips' value={porcentajeIps} onChange={changePorcentajeIps}
-                                                        options={[
-                                                            { value: '1', label: 'EN BASE AL 9%' },
-                                                            { value: '2', label: 'EN BASE AL 25,5%' },
-                                                            { value: '3', label: 'NO POSEE IPS' },
-                                                        ]}
-                                                        id='tipoIps' name='tipoIps' />
+                                                    <Select3 options={porcentajesIps} valueKey="id" labelKey="descripcion" value={porcentajeIps} onChange={changePorcentajeIps} placeholder="Seleccione % ipse" /> 
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1224,7 +1097,7 @@ const Empleados = () => {
                                                     <label htmlFor='ipsBase' className='form-label'>
                                                         Monto Ips Base:
                                                     </label>
-                                                    <input   onChange={ onChange }type='number' className='form-control' id='ipsBase' name='ipsBase' min={0} value={funcionario?.ipsBase} />
+                                                    <input onChange={onChangeInput} type='number' className='form-control' id='ipsBase' name='ipsBase' value={funcionario?.ipsBase || ''} required />
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1232,7 +1105,7 @@ const Empleados = () => {
                                                     <label htmlFor='anticipo' className='form-label'>
                                                         Monto Anticipo Mensual:
                                                     </label>
-                                                    <input   onChange={ onChange }type='number' className='form-control' id='anticipo' name='anticipo' min={0} value={funcionario?.anticipo} />
+                                                    <input onChange={onChangeInput} type='number' className='form-control' id='anticipo' name='anticipo' value={funcionario?.anticipo || ''} required />
                                                 </div>
                                             </div>
                                         </div>
@@ -1248,9 +1121,7 @@ const Empleados = () => {
                                                             <div className="input-group-prepend">
                                                                 <button type="button" className=" btn btn-secondary" onClick={OpenModalSalario}>Agregar Salario</button>
                                                             </div>
-                                                            <input   onChange={ onChange }className="form-control" value={funcionario?.salarioActual}
-                                                                type="text" id='salarioActual' name='salarioActual'
-                                                                disabled={true} ui-number-mask="0" />
+                                                            <input onChange={onChangeInput} disabled={true} type='number' className='form-control' id='salarioActual' name='salarioActual' value={funcionario?.salarioActual || ''} required />
 
                                                         </div>
                                                     </div>
@@ -1268,9 +1139,7 @@ const Empleados = () => {
                                                                 <button type="button" className=" btn btn-secondary" onClick={OpenModalHonorario}>Agregar                                                                    Honorario</button>
 
                                                             </div>
-                                                            <input   onChange={ onChange }className="form-control" id="honorarioActual" name='honorarioActual' value={funcionario?.honorarioActual}
-                                                                type="text"
-                                                                disabled={true} ui-number-mask="0" />
+                                                            <input onChange={onChangeInput} disabled={true} type='number' className='form-control' id='honorarioActual' name='honorarioActual' value={funcionario?.honorarioActual || ''} required />
 
                                                         </div>
                                                     </div>
@@ -1289,7 +1158,7 @@ const Empleados = () => {
                             </div>
 
 
-                        </div> */}
+                        </div>
                     </div>
                     <div className={activeTab === 'tab3' ? 'tab-pane fade show active' : 'tab-pane fade'} >
                         {/*   <div className='card-body'>
