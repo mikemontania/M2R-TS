@@ -2,74 +2,17 @@ import { useContext, useState, useEffect, CSSProperties, ChangeEvent } from 'rea
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AuthContext } from '../../Context/AuthContext';
 import { ContextAuthType } from '../../Interfaces.ts/AuthInterface';
-import { get } from '../../Axios/AxiosService';
+import { get, post } from '../../Axios/AxiosService';
 import sinImagen from '../../Assets/legajo-sin-imagen.jpg';
-import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, OptionSelectComponent, Funcionario, Sexo, Horario, SiNo, PorcentajeIps, Carrera } from '../../Interfaces.ts/FuncionarioSearch';
+import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, Funcionario, Sexo, Horario, SiNo, PorcentajeIps, Carrera, SalarioDetalle, SALARIOINICIAL, FUNCIONARIOINICIAL } from '../../Interfaces.ts/FuncionarioSearch';
 import Select from 'react-select';
 import ModalData from '../../Components/ModalData';
 import Select3 from '../../Components/Select3';
+import Swal from 'sweetalert2';
 
 const style: CSSProperties = {
     width: '242px',
     height: '200px',
-};
-
-
-
-const funcionarioInit: Funcionario = {
-
-    nroTarjeta: '',
-    fechaIngreso: '',
-    ingresoIps: '',
-    nombre: '',
-    ci: '',
-    fechaNacimiento: '',
-    direccion: '',
-    path: '',
-    bonificacion: '',
-    tipoIps: '',
-    concat: '',
-    celular: '',
-    telefono: '',
-    telefonoFamiliar: '',
-    lugarNacimiento: '',
-    familiaresEmpresa: '',
-    controlarHorario: '',
-    fechaSalida: '',
-    activo: '',
-    empresasId: 0,
-    salarioActual: 0,
-    honorarioActual: 0,
-    anticipo: 0,
-    observacion: '',
-    imagen: '',
-    salidaIps: '',
-    interno: '',
-    corporativo: '',
-    escolarCompleta: false,
-    escolarIncompleta: false,
-    mediaCompleta: false,
-    mediaIncompleta: false,
-    tecnicaturaCompleta: false,
-    tecnicaturaIncompleta: false,
-    universitarioCompleto: false,
-    universitarioIncompleto: false,
-    email: '',
-    especializacion: false,
-    maestria: false,
-    doctorado: false,
-    postgrado: null,
-    estudios: '',
-    ctaBanco: '',
-    semanalFijo: '',
-    ipsBase: null,
-    personasHijos: null,
-    salariosDetalle: null,
-    empleadoFamilias: null,
-    honorariosProfesionales: null,
-    sectorInt: null,
-    subSectorInt: null,
-    frecuenciaId: null,
 };
 
 const sexoArray = [{ id: 'M', descripcion: 'MASCULINO' }, { id: 'F', descripcion: 'FEMENINO' }, { id: 'X', descripcion: 'OTROS' }]
@@ -84,7 +27,7 @@ const Empleados = () => {
         getFuncionarioById(selectedItem.id);
 
     };
-    const [funcionario, setFuncionario] = useState<Funcionario>(funcionarioInit);
+    const [funcionario, setFuncionario] = useState<Funcionario>(FUNCIONARIOINICIAL);
     //Tabs
     const [activeTab, setActiveTab] = useState<string>('tab1');
     const handleTabChange = (tab: string) => {
@@ -97,9 +40,10 @@ const Empleados = () => {
         }))
     }
     const onChangeInput = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = typeof event.target.value === 'string' ? event.target.value.toUpperCase() : event.target.value;
         setFuncionario(prev => ({
             ...prev,
-            [event.target.name]: event.target.value
+            [event.target.name]: value
         }))
     }
     const onChangeCheckbox = (event: ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +56,8 @@ const Empleados = () => {
     const [nacionalidades, setNacionalidades] = useState<any[]>([]);
     const [selectedNacionalidad, setNacionalidad] = useState<Nacionalidad>();
     const changeNacionalidad = (selectedItem: any) => {
-        setNacionalidad(selectedItem);
+        setFuncionario(prev => ({ ...prev, ['nacionalidad']: selectedItem      }))
+        //setNacionalidad(selectedItem);
     };
     //search Pais
     const [paises, setPaises] = useState<any[]>([]);
@@ -266,13 +211,42 @@ const Empleados = () => {
     const [empleadoFamilia, setEmpleadoFamilia] = useState<number>(0);
 
 
+    const [salariosDetalle, setSalariosDetalle] = useState<SalarioDetalle[]>([]);
+    const [salarioItem, setSalarioItem] = useState<SalarioDetalle>(SALARIOINICIAL);
+    const [honorarios, setHonorarios] = useState<SalarioDetalle[]>([]);
+    const [honorarioItem, setHonorarioItem] = useState<SalarioDetalle>(SALARIOINICIAL);
 
-
-
+    const onChangeSalarioItem = (event: ChangeEvent<HTMLInputElement>) => {
+        setSalarioItem(prev => ({ ...prev, [event.target.name]: event.target.value }))
+    }
+    const onChangeHonorarioItem = (event: ChangeEvent<HTMLInputElement>) => {
+        setSalarioItem(prev => ({ ...prev, [event.target.name]: event.target.value }))
+    }
     const enviarForm = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        // Aquí puedes hacer lo que quieras con los datos del formulario
         console.log('Formulario enviado');
+        if (funcionario?.id) {
+            try {
+                const respuesta = put('/private/empleados/' + funcionario);
+                getFuncionarioById(funcionario.id);
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            try {
+                post('/private/empleados/' + funcionario).then(resp => {
+                    setFuncionario(resp.data);
+                    Swal.fire({
+                        title: "El funcionario se ha creado con exito!!!",
+                        text: "Monto es un campo obligatorio",
+                        confirmButtonText: "Aceptar",
+                    });
+                })
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
     };
     const getFuncionarios = async () => {
         try {
@@ -474,6 +448,7 @@ const Empleados = () => {
         setPorcentajeIps(funcionario?.porcentajeIps);
         setFamiliarEmpresa((funcionario?.familiaresEmpresa) ? siNoList.find(s => s.id == funcionario?.familiaresEmpresa) : '');
         setCarrera(funcionario?.carrera);
+        setSalariosDetalle((funcionario?.salariosDetalle) ? funcionario?.salariosDetalle : [])
         console.log(funcionario);
 
         if (funcionario.personasHijos != null || funcionario.personasHijos != undefined)
@@ -484,7 +459,6 @@ const Empleados = () => {
             setEmpleadoFamilia(funcionario.empleadoFamilias.length);
 
     }, [funcionario]);
-
 
 
 
@@ -503,144 +477,89 @@ const Empleados = () => {
     const OpenModalHonorario = () => {
         setShowModalHonorario(true);
     };
-    /* 
-    const guardarSalario = () =>{
-        if ($scope.modoSalario == "EDIT") {
-            $scope.salariosEdit.fecha = $scope.fechaSalario;
-            $scope.salariosEdit.activo = 'S';
-    
-             $http.put(APP_CONFIG.baseUrl + '/private/salariosDetalle/' + $scope.search.employee.id, $scope.salariosEdit)
-              .success(function (data, status, headers, config) {
-    
-                $http.get(APP_CONFIG.baseUrl + '/private/salariosDetalle/historial/' + $scope.search.employee.id)
-                  .success(function (data) {
-    
-                    $scope.search.employee.salariosDetalle = data;
-                    var index = ($scope.search.employee.salariosDetalle.length) - 1;
-                    if (index >= 0) {
-                      $scope.search.employee.salarioActual = $scope.search.employee.salariosDetalle[index].monto;
-                    } else {
-                      $scope.search.employee.salarioActual = 0;
-                    }
-                  })
-                  .error(function (response) {
-                    console.log('error obtener historial de salarios' + response);
-                  });
-    
-                $('#dialog_salarios').modal('hide');
-                $scope.muestraSalarios = false;
-                $scope.insertSalarios = false;
-                $scope.modoSalario = "INSERT";
-              })
-              .error(function (response) {
-                console.log("error al editar el salario" + response);
-              });
-          } else {
-            var fechaSalario = new Date($scope.salariosAdd.fecha);
-            $scope.salariosAdd.activo = 'S';
-            fechaSalario.setDate(fechaSalario.getDate());
-            if ($scope.modo == "INSERT") {
-              var cant = $scope.arraySalarios.length;
-              if (cant == 0) {
-                $scope.arraySalarios[0] = $scope.salariosAdd;
-                $scope.arraySalarios[0].id = null;
-                $scope.search.employee.salariosDetalle[0] = $scope.arraySalarios[0];
-              } else {
-                $scope.arraySalarios[cant] = $scope.salariosAdd;
-                $scope.arraySalarios[cant].id = null;
-                $scope.search.employee.salariosDetalle[cant] = $scope.arraySalarios[cant];
-              }
-              $('#dialog_salarios').modal('hide');
-              $scope.salariosAdd = {};
-              $scope.muestraSalarios = false;
-              $scope.insertSalarios = false;
-              var index = ($scope.search.employee.salariosDetalle.length) - 1;
-              if (index >= 0) {
-                $scope.search.employee.salarioActual = $scope.search.employee.salariosDetalle[index].monto;
-              } else {
-                $scope.search.employee.salarioActual = 0;
-              }
+
+    const guardarSalario = async () => {
+
+        if (salarioItem?.monto < 1) {
+            Swal.fire({
+                title: "Falta el campo Monto",
+                text: "Monto es un campo obligatorio",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+        if (salarioItem?.fecha == null || salarioItem?.fecha == '') {
+            Swal.fire({
+                title: "Falta el campo Fecha",
+                text: "Fecha es un campo obligatorio",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+        if (funcionario?.id) {
+            const agregado = await post('/private/salariosDetalle/' + funcionario.id, salarioItem);
+            const historial = await get('/private/salariosDetalle/historial/' + funcionario.id);
+            setSalariosDetalle(historial.data);
+            var index = (salariosDetalle.length) - 1;
+            if (index >= 0) {
+                setFuncionario(prev => ({ ...prev, ['salarioActual']: salariosDetalle[index].monto }))
             } else {
-    
-              $http.post(APP_CONFIG.baseUrl + '/private/salariosDetalle/' + $scope.search.employee.id, $scope.salariosAdd)
-                .success(function (data, status, headers, config) {
-    
-                  $http.get(APP_CONFIG.baseUrl + '/private/salariosDetalle/historial/' + $scope.search.employee.id)
-                    .success(function (data) {
-                      $scope.search.employee.salariosDetalle = data;
-                      var index = ($scope.search.employee.salariosDetalle.length) - 1;
-                      if (index >= 0) {
-                        $scope.search.employee.salarioActual = $scope.search.employee.salariosDetalle[index].monto;
-                      } else {
-                        $scope.search.employee.salarioActual = 0;
-                      }
-                      $scope.muestraSalarios = false;
-                      $scope.insertSalarios = false;
-                    })
-                    .error(function (response) {
-                      console.log('error obtener historial de salarios' + response);
-                    });
-    
-                  $('#dialog_salarios').modal('hide');
-                  $scope.salariosAdd = {};
-                })
-                .error(function (response) {
-                  console.log("error al crear el salario " + response);
-                });
+                setFuncionario(prev => ({ ...prev, ['salarioActual']: 0 }))
             }
-          }
+            setSalarioItem(SALARIOINICIAL);
+
+        } else {
+            Swal.fire({
+                title: "El funcionario no existe",
+                text: "Debe guardar el funcionario antes de insertar el salario",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+
     }
-    
-    
-        
-          $scope.showSalarios = function (item) {
-            if (item) {
-              $scope.modoSalario = "EDIT";
-              $scope.salariosEdit = item;
-              var fecSalario = new Date($scope.salariosEdit.fecha);
-              fecSalario.setDate(fecSalario.getDate() + 1);
-              //fecSalario.setDate(fecSalario.getDate() + 1);
-              $scope.fechaSalario = fecSalario;
+
+    const guardarHonorario = async () => {
+
+        if (honorarioItem?.monto < 1) {
+            Swal.fire({
+                title: "Falta el campo Monto",
+                text: "Monto es un campo obligatorio",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+        if (honorarioItem?.fecha == null || honorarioItem?.fecha == '') {
+            Swal.fire({
+                title: "Falta el campo Fecha",
+                text: "Fecha es un campo obligatorio",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+        if (funcionario?.id) {
+            const agregado = await post('/private/honorariosProfesionales/' + funcionario.id, honorarioItem);
+            const historial = await get('/private/honorariosProfesionales/' + funcionario.id);
+            setHonorarios(historial.data);
+            var index = (honorarios.length) - 1;
+            if (index >= 0) {
+                setFuncionario(prev => ({ ...prev, ['honorarioActual']: honorarios[index].monto }))
+            } else {
+                setFuncionario(prev => ({ ...prev, ['honorarioActual']: 0 }))
             }
-            $scope.muestraSalarios = true;
-          };
-      
-          $scope.hideSalarios = function () {
-            $scope.muestraSalarios = false;
-            $scope.insertSalarios = false;
-            $scope.modoSalario = "INSERT";
-          };
-      
-          $scope.modoInsertSalario = function () {
-            $scope.insertSalarios = true;
-            $scope.modoSalario = "INSERT";
-          };
-          $scope.removeSalario = function (item) {
-            //console.log(item);
-            $http.delete(APP_CONFIG.baseUrl + '/private/salariosDetalle/' + item.id)
-              .success(function (data) {
-                salarioService.query({ id: $scope.search.employee.id }).$promise.then(function (data) {
-                  $scope.search.employee.salariosDetalle = data;
-                  var index = ($scope.search.employee.salariosDetalle.length) - 1;
-                  if (index >= 0) {
-                    $scope.search.employee.salarioActual = $scope.search.employee.salariosDetalle[index].monto;
-                  } else {
-                    $scope.search.employee.salarioActual = 0;
-                  }
-                  $scope.muestraSalarios = false;
-                  $scope.insertSalarios = false;
-                });
-                // $('#dialog_salarios').modal('hide');
-                $scope.salariosAdd = {};
-                $scope.salariosEdit = {};
-              })
-              .error(function (response) {
-                console.log('error al eliminar honorario: ' + response);
-              });
-       
-          }; 
-    
-     */
+            setSalarioItem(SALARIOINICIAL);
+
+        } else {
+            Swal.fire({
+                title: "El funcionario no existe",
+                text: "Debe guardar el funcionario antes de insertar el salario",
+                confirmButtonText: "Aceptar",
+            });
+            return;
+        }
+
+    }
+
 
     return (
         <>
@@ -666,7 +585,7 @@ const Empleados = () => {
             <div className='mb-3 card' >
                 <div className='card-header-tab card-header'>
                     <div className='card-header-title'>
-                        LEGAJO {(funcionario?.legajo ?  <span>&nbsp;  N° {funcionario?.legajo}</span>   : '')}
+                        LEGAJO {(funcionario?.legajo ? <span>&nbsp;  N° {funcionario?.legajo}</span> : '')}
                     </div>
                     <ul className='nav '>
                         <li className='nav-item'>
@@ -757,7 +676,7 @@ const Empleados = () => {
                                         <div className='form-row'>
                                             <div className='col-md-4 col-sm-12'>
                                                 <div className='position-relative form-group'>
-                                                    <label htmlFor='pais' className='form-label'>
+                                                    <label   className='form-label'>
                                                         Pais de Nacimiento
                                                     </label>
                                                     {paises ? (
@@ -767,11 +686,11 @@ const Empleados = () => {
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
                                                 <div className='position-relative form-group'>
-                                                    <label htmlFor='nacionalidad' className='form-label'>
+                                                    <label  className='form-label'>
                                                         Nacionalidad:
                                                     </label>
 
-                                                    {nacionalidades ? (<Select3 options={nacionalidades} valueKey="id" labelKey="descripcion" value={selectedNacionalidad} onChange={changeNacionalidad} placeholder="Seleccione Nacionalidad"
+                                                    {nacionalidades ? (<Select3 options={nacionalidades} valueKey="id" labelKey="descripcion" value={funcionario?.nacionalidad} onChange={changeNacionalidad} placeholder="Seleccione Nacionalidad"
                                                     />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
@@ -817,8 +736,7 @@ const Empleados = () => {
                                                 </div>
                                             </div>
                                         </div>
-
-
+ 
                                         <div className='form-row'>
                                             <div className='col-md-4 col-sm-12'>
                                                 <div className='position-relative form-group'>
@@ -1151,8 +1069,6 @@ const Empleados = () => {
                                             </div>
                                         </div>
 
-
-
                                         <div className='form-row'>
                                             {(globalData?.rol === 'Informatica' || globalData?.rol === 'Directores') ?
 
@@ -1255,7 +1171,8 @@ const Empleados = () => {
                                         <div className="checkbox">
                                             <label>
                                                 <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.escolarCompleta} />
+                                                    checked={funcionario?.escolarCompleta} id="escolarCompleta"
+                                                    name="escolarCompleta" />
                                                 <span>Educación Escolar Básica (Completa)</span>
                                             </label>
                                         </div>
@@ -1263,7 +1180,8 @@ const Empleados = () => {
                                         <div className="checkbox">
                                             <label>
                                                 <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.mediaCompleta} />
+                                                    id="mediaCompleta"
+                                                    name="mediaCompleta" checked={funcionario?.mediaCompleta} />
                                                 <span>Educación Media (Completa)</span>
                                             </label>
                                         </div>
@@ -1271,16 +1189,18 @@ const Empleados = () => {
                                         <div className="checkbox">
                                             <label>
                                                 <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.tecnicaturaCompleta}
-                                                    ng-change="habilitarCarrera()" />
+                                                    id="tecnicaturaCompleta"
+                                                    name="tecnicaturaCompleta" checked={funcionario?.tecnicaturaCompleta}
+                                                />
                                                 <span>Técnicatura (Especificar Área-Completa)</span>
                                             </label>
                                         </div>
                                         <div className="checkbox">
                                             <label>
                                                 <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.universitarioCompleto}
-                                                    ng-change="habilitarCarrera()" />
+                                                    id="universitarioCompleto"
+                                                    name="universitarioCompleto" checked={funcionario?.universitarioCompleto}
+                                                />
                                                 <span>Nivel Universitario(Completo)</span>
                                             </label>
                                         </div>
@@ -1289,7 +1209,8 @@ const Empleados = () => {
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                <input id="escolarIncompleta"
+                                                    name="escolarIncompleta" onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
                                                     checked={funcionario?.escolarIncompleta} />
                                                 <span>Educación Escolar Básica (Incompleta)</span>
                                             </label>
@@ -1297,25 +1218,21 @@ const Empleados = () => {
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.mediaIncompleta} />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0" id="mediaIncompleta" name="mediaIncompleta" checked={funcionario?.mediaIncompleta} />
                                                 <span>Educación Media (Incompleta)</span>
                                             </label>
                                         </div>
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.tecnicaturaIncompleta}
-                                                    ng-change="habilitarCarrera()" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0" id="tecnicaturaIncompleta" name="tecnicaturaIncompleta" checked={funcionario?.tecnicaturaIncompleta}
+                                                />
                                                 <span>Técnicatura (Incompleta)</span>
                                             </label>
                                         </div>
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.universitarioIncompleto}
-                                                    ng-change="habilitarCarrera()" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0" id="universitarioIncompleto" name="universitarioIncompleto" checked={funcionario?.universitarioIncompleto} />
                                                 <span>Nivel Universitario(Incompleto)</span>
                                             </label>
                                         </div>
@@ -1324,41 +1241,29 @@ const Empleados = () => {
                                 <div className="col-lg-7">
                                     <div className="form-group">
                                         <label>Carrera</label>
-                                        <div className="input-group">
-                                            {carreras ? (<Select3 options={carreras} valueKey="id" labelKey="descripcion" value={carrera} onChange={changeCarrera} placeholder="Seleccione carrera"
-                                            />) : (<div>Cargando...</div>)}
-
-                                            <div className="input-group-btn">
-                                                <button className="btn btn-default" type="button"
-                                                    data-toggle="modal"
-                                                    data-target="#dialog_carrera"
-                                                    ng-click="carregat()"><i
-                                                        className="fa fa-pencil"></i></button>
-                                            </div>
-                                        </div>
+                                        {carreras ? (<Select3 options={carreras} valueKey="id" labelKey="descripcion" value={carrera} onChange={changeCarrera} placeholder="Seleccione carrera" />) : (<div>Cargando...</div>)}
                                     </div>
                                 </div>
 
-                               <div className="col-lg-7">
+                                <div className="col-lg-7">
                                     <div className="form-group">
                                         <label>Especifique si se encuentra cursando actualmente
                                             otros estudios</label>
-
                                         <textarea onChange={onChangeTextarea} className='form-control' rows={5} id='estudios' name='estudios' value={funcionario?.estudios || ''} />
-
                                     </div>
-                                </div> 
- 
-                            <div className="form-group">
+                                </div>
+
+                                <div className="form-group">
                                     <label className="col-md-2 control-label">Post Graduación </label>
                                     <div className="col-md-3">
 
                                         <div className="checkbox">
                                             <label>
                                                 <input onChange={onChangeCheckbox}
-                                                    type="checkbox" className="checkbox style-0"
+                                                    type="checkbox" className="checkbox style-0" id="especializacion"
+                                                    name="especializacion"
                                                     checked={funcionario?.especializacion}
-                                                    ng-change="habilitarPostgrado()" />
+                                                />
                                                 <span>Especialización</span>
                                             </label>
                                         </div>
@@ -1367,8 +1272,9 @@ const Empleados = () => {
                                             <label>
                                                 <input onChange={onChangeCheckbox}
                                                     type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.maestria}
-                                                    ng-change="habilitarPostgrado()" />
+                                                    checked={funcionario?.maestria} id="maestria"
+                                                    name="maestria"
+                                                />
                                                 <span>Maestría</span>
                                             </label>
                                         </div>
@@ -1377,25 +1283,24 @@ const Empleados = () => {
                                             <label>
                                                 <input onChange={onChangeCheckbox}
                                                     type="checkbox" className="checkbox style-0"
-                                                    checked={funcionario?.doctorado}
-                                                    ng-change="habilitarPostgrado()" />
+                                                    checked={funcionario?.doctorado} id="doctorado"
+                                                    name="doctorado" />
                                                 <span>Doctorado</span>
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                 <div className="col-lg-7">
+                                <div className="col-lg-7">
                                     <div className="form-group">
                                         <label>Descripcion del Post Grado</label>
                                         <input onChange={onChangeInput} type="text" name="postgrado"
                                             value={funcionario?.postgrado || ''}
-                                            className="form-control" ng-disabled="postgrado"
+                                            className="form-control"
                                         ></input>
                                     </div>
-                                </div>  
+                                </div>
                             </div>
-
 
                         </div>
                     </div>
@@ -1408,13 +1313,123 @@ const Empleados = () => {
                 </button>
 
                 <ModalData title="Salario" show={showModalSalario} onClose={CloseModalSalario} size="lg">
-                    <p>This is an example modal.</p>
-                    <p>You can put whatever you want inside it.</p>
+                    <form id="formSalario" name="formSalario" role="form"  >
+                        <div className="modal-body">
+                            <fieldset  >
+                                <legend>Complete la información del salario</legend>
+                                <div className="row">
+                                    <div className="col-lg-9">
+                                        <div className="form-group">
+                                            <label>Fecha</label>
+                                            <input type="date" id='fecha' name='fecha' className="form-control" onChange={onChangeSalarioItem} value={salarioItem?.fecha || ''} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Monto</label>
+                                            <input type="number" id='monto' name='monto' className="form-control" min="0" onChange={onChangeSalarioItem} value={salarioItem?.monto || ''} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Observación</label>
+                                            <input type="text" id='observacion' name='observacion' className="form-control" onChange={onChangeSalarioItem} value={salarioItem?.observacion || ''} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="  group-button">
+                                    <button type="button" className="m-1 btn btn-secondary" onClick={guardarSalario}  >Guardar</button>
+                                    <button type="button" className="m-1 btn btn-danger" onClick={() => setSalarioItem(SALARIOINICIAL)} data-dismiss="modal">Cancelar</button>
+                                </div>
+                            </fieldset>
+                            <table className="table table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Monto</th>
+                                        <th>Observacion</th>
+                                        <th>Estado</th>
+                                        <th  ></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        salariosDetalle.map(salario =>
+                                            <tr key={salario.id}>
+                                                <td>{new Date(salario.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                                                <td>{salario.monto.toLocaleString('es', { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true, currency: 'PYG', style: 'currency', currencyDisplay: 'symbol' })}</td>
+                                                <td>{salario.observacion}</td>
+                                                {(salario.activo == 'S' ? <td>ACTIVO</td> : <td>ACTIVO</td>)}
+                                                <td>
+                                                    <button type="button" ng-click="removeSalario(item)" className="btn btn-danger" title="Eliminar">
+                                                        <i className="fa fa-trash-o fa-fw"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>)
+                                    }
+                                </tbody>
+                            </table>
+
+
+                        </div>
+
+                    </form>
                 </ModalData>
 
                 <ModalData title="Honorario" show={showModalHonorario} onClose={CloseModalHonorario} size="lg">
-                    <p>This is an example modal.</p>
-                    <p>You can put whatever you want inside it.</p>
+                    <form id="formHonorario" name="formHonorario" role="form"  >
+                        <div className="modal-body">
+                            <fieldset  >
+                                <legend>Complete la información del honorario</legend>
+                                <div className="row">
+                                    <div className="col-lg-9">
+                                        <div className="form-group">
+                                            <label>Fecha</label>
+                                            <input type="date" id='fecha' name='fecha' className="form-control" onChange={onChangeHonorarioItem} value={honorarioItem?.fecha || ''} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Monto</label>
+                                            <input type="number" id='monto' name='monto' className="form-control" min="0" onChange={onChangeHonorarioItem} value={honorarioItem?.monto || ''} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Observación</label>
+                                            <input type="text" id='observacion' name='observacion' className="form-control" onChange={onChangeHonorarioItem} value={honorarioItem?.observacion || ''} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="  group-button">
+                                    <button type="button" className="m-1 btn btn-secondary" onClick={guardarHonorario}  >Guardar</button>
+                                    <button type="button" className="m-1 btn btn-danger" onClick={() => setHonorarioItem(SALARIOINICIAL)} data-dismiss="modal">Cancelar</button>
+                                </div>
+                            </fieldset>
+                            <table className="table table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Monto</th>
+                                        <th>Observacion</th>
+                                        <th>Estado</th>
+                                        <th  ></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        honorarios.map(h =>
+                                            <tr key={h.id}>
+                                                <td>{new Date(h.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                                                <td>{h.monto.toLocaleString('es', { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true, currency: 'PYG', style: 'currency', currencyDisplay: 'symbol' })}</td>
+                                                <td>{h.observacion}</td>
+                                                {(h.activo == 'S' ? <td>ACTIVO</td> : <td>ACTIVO</td>)}
+                                                <td>
+                                                    <button type="button" ng-click="removeSalario(item)" className="btn btn-danger" title="Eliminar">
+                                                        <i className="fa fa-trash-o fa-fw"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>)
+                                    }
+                                </tbody>
+                            </table>
+
+
+                        </div>
+
+                    </form>
                 </ModalData>
 
 
@@ -1425,3 +1440,11 @@ const Empleados = () => {
     );
 };
 export default Empleados;
+
+function put(arg0: string) {
+    throw new Error('Function not implemented.');
+}
+function plainToClass(Funcionario: any, responseData: any) {
+    throw new Error('Function not implemented.');
+}
+

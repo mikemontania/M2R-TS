@@ -1,4 +1,4 @@
- 
+
 export interface OpcionSelect {
     label: string,
     value: string,
@@ -13,7 +13,7 @@ export interface Empresa {
     ruc: string;
     telefono: string;
     email: string;
-  }
+}
 
 export interface FuncionarioSearch {
     id: number;
@@ -22,97 +22,98 @@ export interface FuncionarioSearch {
     ci: string;
     tipoIps: string;
     concat: string;
-  }
-  
-  export interface Sucursal { 
+}
 
-      id: number;
-      empresas: Empresa;
-      direccion: string;
-      telefono: string;
-      email: string;
-      descripcion: string;
-      concat: string;
-      patronal:string; 
-  }
-  
+export interface Sucursal {
 
-  export interface Sector { 
-      id: number;
-      empresasId:number; 
-    sucursales:Sucursal;
-    descripcion: string; 
+    id: number;
+    empresas: Empresa;
+    direccion: string;
+    telefono: string;
+    email: string;
+    descripcion: string;
+    concat: string;
+    patronal: string;
+}
+
+
+export interface Sector {
+    id: number;
+    empresasId: number;
+    sucursales: Sucursal;
+    descripcion: string;
     esComercial: string;
-    subSectors:SubSector[]
+    subSectors: SubSector[]
 }
 
-export interface SubSector { 
+export interface SubSector {
     id: number;
-    sector:Sector; 
-    descripcion: string;  
+    sector: Sector;
+    descripcion: string;
 }
- 
-export interface Localidad { 
+
+export interface Localidad {
     id: number;
-    descripcion: string;  
-    barrios:Barrio[]; 
+    descripcion: string;
+    barrios: Barrio[];
 }
-export interface Barrio { 
+export interface Barrio {
     id: number;
-    descripcion: string;  
-    localidad:Localidad
+    descripcion: string;
+    localidad: Localidad
 }
-export interface OptionSelectComponent { 
+export interface OptionSelectComponent {
     value: string;
-    label: string;  
- }
-export interface Estadocivil { 
-    id: number;
-    descripcion: string;  
+    label: string;
 }
-export interface Pais { 
+export interface Estadocivil {
     id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface Seleccion { 
+export interface Pais {
     id: number;
-    descripcion: string;  
-} 
-export interface Nacionalidad { 
-    id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface Categoria { 
+export interface Seleccion {
     id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface CentroCosto { 
+export interface Nacionalidad {
+    id: number;
+    descripcion: string;
+}
+export interface Categoria {
+    id: number;
+    descripcion: string;
+}
+export interface CentroCosto {
     codigo: string;
-    concat: string;  
+    concat: string;
     empresas: Empresa;
 }
-export interface Turno { 
+export interface Turno {
     id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface FrecuenciaPago { 
+export interface FrecuenciaPago {
     id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface TipoEmpleado { 
+export interface TipoEmpleado {
     id: number;
-    descripcion: string;  
+    descripcion: string;
 }
-export interface Sexo { 
+export interface Sexo {
     id: string;
-    descripcion: string;  
+    descripcion: string;
 }
 
 
 
 
 export interface Funcionario {
-    legajo?:number,
+    id?:number,
+    legajo?: number,
     activo: string;
     anticipo: number;
     barrio?: Barrio;
@@ -147,7 +148,7 @@ export interface Funcionario {
     horarios?: Horario;
     imagen: string;
     ingresoIps: string;
-    salidaIps:string;
+    salidaIps: string;
     interno: string;
     ipsBase: any;
     lugarNacimiento: string;
@@ -164,7 +165,7 @@ export interface Funcionario {
     personasHijos: any;
     porcentajeIps?: PorcentajeIps;
     postgrado: any;
-    salariosDetalle: any;
+    salariosDetalle?: SalarioDetalle[];
     salarioActual: number;
     sector?: Sector;
     sectorInt: any;
@@ -183,12 +184,12 @@ export interface Funcionario {
     universitarioCompleto: boolean;
     universitarioIncompleto: boolean;
     viaSeleccion?: ViaSeleccion;
-  }
-   
-  export interface Horario {
+}
+
+export interface Horario {
     id: number
     turnos: Turno
-    subSector: SubSector 
+    subSector: SubSector
     horaDesde: string
     horaHasta: string
     empresasId: number
@@ -203,31 +204,98 @@ export interface Funcionario {
     concat: string
     sabado: string
     domingo: string
-  }
-   
+}
 
-  export interface SiNo {
+
+export interface SiNo {
     id: string
     descripcion: string
-  }
+}
 export interface EstadoCivil {
     id: number
     descripcion: string
-  }
-  export interface ViaSeleccion {
+}
+export interface ViaSeleccion {
     id: number
     descripcion: string
-  }
-
-  
+}
+export interface SalarioDetalle {
+    id?: number;
+    fecha: string;
+    monto: number;
+    observacion: string;
+    activo: string;
+}
 
 export interface PorcentajeIps {
     id: number
     descripcion: string
     porcentaje: number
-  }
+}
 
-  export interface Carrera {
+export interface Carrera {
     id: number
     descripcion: string
-  }
+}
+
+export const SALARIOINICIAL:SalarioDetalle ={ 
+    fecha:new Date().toISOString().slice(0, 10),
+    monto: 0,
+    observacion: '',
+    activo: 'S',
+}
+
+export const FUNCIONARIOINICIAL: Funcionario = {
+
+    nroTarjeta: '',
+    fechaIngreso: '',
+    ingresoIps: '',
+    nombre: '',
+    ci: '',
+    fechaNacimiento: '',
+    direccion: '',
+    path: '',
+    bonificacion: '',
+    tipoIps: '',
+    concat: '',
+    celular: '',
+    telefono: '',
+    telefonoFamiliar: '',
+    lugarNacimiento: '',
+    familiaresEmpresa: '',
+    controlarHorario: '',
+    fechaSalida: '',
+    activo: '',
+    empresasId: 0,
+    salarioActual: 0,
+    honorarioActual: 0,
+    anticipo: 0,
+    observacion: '',
+    imagen: '',
+    salidaIps: '',
+    interno: '',
+    corporativo: '',
+    escolarCompleta: false,
+    escolarIncompleta: false,
+    mediaCompleta: false,
+    mediaIncompleta: false,
+    tecnicaturaCompleta: false,
+    tecnicaturaIncompleta: false,
+    universitarioCompleto: false,
+    universitarioIncompleto: false,
+    email: '',
+    especializacion: false,
+    maestria: false,
+    doctorado: false,
+    postgrado: null,
+    estudios: '',
+    ctaBanco: '',
+    semanalFijo: '',
+    ipsBase: null,
+    personasHijos: null,
+    empleadoFamilias: null,
+    honorariosProfesionales: null,
+    sectorInt: null,
+    subSectorInt: null,
+    frecuenciaId: null,
+};
