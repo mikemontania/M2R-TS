@@ -4,7 +4,7 @@ import { AuthContext } from '../../Context/AuthContext';
 import { ContextAuthType } from '../../Interfaces.ts/AuthInterface';
 import { get } from '../../Axios/AxiosService';
 import sinImagen from '../../Assets/legajo-sin-imagen.jpg';
-import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, OptionSelectComponent, Funcionario, Sexo, Horario, SiNo, PorcentajeIps } from '../../Interfaces.ts/FuncionarioSearch';
+import { FuncionarioSearch, Sector, Sucursal, Localidad, Estadocivil, Nacionalidad, Pais, CentroCosto, Categoria, Turno, Seleccion, FrecuenciaPago, TipoEmpleado, Barrio, SubSector, OptionSelectComponent, Funcionario, Sexo, Horario, SiNo, PorcentajeIps, Carrera } from '../../Interfaces.ts/FuncionarioSearch';
 import Select from 'react-select';
 import ModalData from '../../Components/ModalData';
 import Select3 from '../../Components/Select3';
@@ -99,9 +99,15 @@ const Empleados = () => {
     const onChangeInput = (event: ChangeEvent<HTMLInputElement>) => {
         setFuncionario(prev => ({
             ...prev,
-            [event.target.name]: (event.target.value) ? event.target.value : ''
+            [event.target.name]: event.target.value
         }))
     }
+    const onChangeCheckbox = (event: ChangeEvent<HTMLInputElement>) => {
+        setFuncionario(prev => ({
+            ...prev,
+            [event.target.name]: event.target.checked
+        }))
+    };
     //search Nacionalidad
     const [nacionalidades, setNacionalidades] = useState<any[]>([]);
     const [selectedNacionalidad, setNacionalidad] = useState<Nacionalidad>();
@@ -242,13 +248,27 @@ const Empleados = () => {
     const [selectedTipoIps, setTipoIps] = useState();
     const changeTipoIps = (selectedItem: any) => {
         setTipoIps(selectedItem);
-    }; 
+    };
     //search PorcentajeIps
     const [porcentajesIps, setPorcentajesIps] = useState<any[]>([{ id: '1', descripcion: 'EN BASE AL 9%' }, { id: '2', descripcion: 'EN BASE AL 25,5%' }, { id: '3', descripcion: 'NO POSEE IPS' },]);
     const [porcentajeIps, setPorcentajeIps] = useState<PorcentajeIps>();
     const changePorcentajeIps = (selectedItem: any) => {
         setPorcentajeIps(selectedItem);
     };
+    //search centroCosto
+    const [carreras, setCarreras] = useState<any[]>([]);
+    const [carrera, setCarrera] = useState<Carrera>();
+    const changeCarrera = (selectedItem: any) => {
+        setCarrera(selectedItem);
+    };
+
+    const [personasHijos, setPersonasHijos] = useState<number>(0);
+    const [empleadoFamilia, setEmpleadoFamilia] = useState<number>(0);
+
+
+
+
+
     const enviarForm = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         // Aquí puedes hacer lo que quieras con los datos del formulario
@@ -265,7 +285,7 @@ const Empleados = () => {
 
     const getFuncionarioById = async (id: number) => {
         try {
-            const response = await get('/private/empleados/' + id);
+            const response = await get('/private/empleados/id/' + id);
             console.log(response.data);
             await setFuncionario(response.data as Funcionario);
         } catch (error) {
@@ -276,17 +296,14 @@ const Empleados = () => {
 
 
     const getHorarios = async (turnoid: number, subSectorid: number) => {
-
+        console.log(turnoid, subSectorid)
         try {
             const response = await get('/private/horarios/' + turnoid + '/' + subSectorid);
             console.log(response.data);
-            const select = response.data.map((h: any) => ({
-                label: h.concat,
-                value: h.id.toString(),
-                item: h
-            }))
-            console.log(select);
-            setHorarios(select);
+            setHorarios(response.data);
+            if (funcionario.horarios) {
+                setHorario(funcionario.horarios);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -312,7 +329,7 @@ const Empleados = () => {
 
     const getNacionalidades = async () => {
         try {
-            const response = await get('/private/nacionalidades/'); 
+            const response = await get('/private/nacionalidades/');
             setNacionalidades(response.data);
         } catch (error) {
             console.error(error);
@@ -346,6 +363,16 @@ const Empleados = () => {
             console.error(error);
         }
     }
+
+    const getCarreras = async () => {
+        try {
+            const response = await get('/private/carreras/');
+            setCarreras(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const getSucursales = async () => {
         try {
             const response = await get('/private/sucursales/porEmpresa/' + globalData?.empresas);
@@ -417,8 +444,12 @@ const Empleados = () => {
         getSelecciones();
         getTiposEmpleado();
         getFrecuenciaPago();
+        getCarreras();
     }, []);
 
+    useEffect(() => {
+        (selectedTurno != null && selectedSubSector != null) ? getHorarios(selectedTurno.id, selectedSubSector.id) : null;
+    }, [selectedTurno]);
 
     useEffect(() => {
         setPais(funcionario?.pais);
@@ -441,7 +472,17 @@ const Empleados = () => {
         setTipoEmpleado(funcionario?.tipoEmpleado);
         setTipoIps((funcionario?.tipoIps) ? tiposIps.find(s => s.id == funcionario?.tipoIps) : '');
         setPorcentajeIps(funcionario?.porcentajeIps);
-        console.log(funcionario)
+        setFamiliarEmpresa((funcionario?.familiaresEmpresa) ? siNoList.find(s => s.id == funcionario?.familiaresEmpresa) : '');
+        setCarrera(funcionario?.carrera);
+        console.log(funcionario);
+
+        if (funcionario.personasHijos != null || funcionario.personasHijos != undefined)
+            setPersonasHijos(funcionario.personasHijos.length);
+
+
+        if (funcionario.empleadoFamilias != null || funcionario.empleadoFamilias != undefined)
+            setEmpleadoFamilia(funcionario.empleadoFamilias.length);
+
     }, [funcionario]);
 
 
@@ -625,7 +666,7 @@ const Empleados = () => {
             <div className='mb-3 card' >
                 <div className='card-header-tab card-header'>
                     <div className='card-header-title'>
-                        LEGAJO {('' ? ' Nro' + '' : '')}
+                        LEGAJO {(funcionario?.legajo ?  <span>&nbsp;  N° {funcionario?.legajo}</span>   : '')}
                     </div>
                     <ul className='nav '>
                         <li className='nav-item'>
@@ -960,7 +1001,7 @@ const Empleados = () => {
                                                     <label htmlFor='horario' className='form-label'>
                                                         Horario:
                                                     </label>
-                                                    {horarios ? (<Select3 options={horarios} valueKey="id" labelKey="descripcion" value={selectedHorario} onChange={changeHorario} placeholder="Seleccione Horario"
+                                                    {horarios ? (<Select3 options={horarios} valueKey="id" labelKey="concat" value={selectedHorario} onChange={changeHorario} placeholder="Seleccione Horario"
                                                     />) : (<div>Cargando...</div>)}
                                                 </div>
                                             </div>
@@ -1089,7 +1130,7 @@ const Empleados = () => {
                                                     <label htmlFor='porcentajeIps' className='form-label'>
                                                         Porcentaje Ips:
                                                     </label>
-                                                    <Select3 options={porcentajesIps} valueKey="id" labelKey="descripcion" value={porcentajeIps} onChange={changePorcentajeIps} placeholder="Seleccione % ipse" /> 
+                                                    <Select3 options={porcentajesIps} valueKey="id" labelKey="descripcion" value={porcentajeIps} onChange={changePorcentajeIps} placeholder="Seleccione % ipse" />
                                                 </div>
                                             </div>
                                             <div className='col-md-4 col-sm-12'>
@@ -1161,7 +1202,7 @@ const Empleados = () => {
                         </div>
                     </div>
                     <div className={activeTab === 'tab3' ? 'tab-pane fade show active' : 'tab-pane fade'} >
-                        {/*   <div className='card-body'>
+                        <div className='card-body'>
                             <div className='row'>
                                 <div className='col-md-4 col-sm-12'>
                                     <div className="position-relative form-group"><label  >Cantidad hijos</label>
@@ -1169,7 +1210,7 @@ const Empleados = () => {
                                             <div className="input-group-prepend">
                                                 <button type="button" className=" btn btn-secondary"> Modificar datos</button>
                                             </div>
-                                            <input   onChange={ onChange }className="form-control"
+                                            <input onChange={onChangeInput} className="form-control" value={personasHijos}
                                                 type="text" id='cantHijos' name='cantHijos'
                                                 disabled={true} ui-number-mask="0" />
 
@@ -1182,8 +1223,8 @@ const Empleados = () => {
                                             <div className="input-group-prepend">
                                                 <button type="button" className=" btn btn-secondary"> Modificar datos</button>
                                             </div>
-                                            <input   onChange={ onChange }className="form-control"
-                                                type="text" id='cantHijos' name='cantHijos'
+                                            <input onChange={onChangeInput} className="form-control"
+                                                type="text" id='cantHijos' name='cantHijos' value={empleadoFamilia}
                                                 disabled={true} ui-number-mask="0" />
 
                                         </div>
@@ -1195,50 +1236,50 @@ const Empleados = () => {
                                         <label htmlFor='familiaresEmpresa' className='form-label'>
                                             Familiares en la empresa:
                                         </label>
-                                        <Select value={selectedFamiliarEmpresa} onChange={changeFamiliarEmpresa} options={siNoList} id='familiaresEmpresa' name='familiaresEmpresa' />
+                                        <Select3 options={siNoList} valueKey="id" labelKey="descripcion" value={selectedFamiliarEmpresa} onChange={changeFamiliarEmpresa} placeholder="Si/NO" />
+
                                     </div>
                                 </div>
 
 
                             </div>
 
-
-                        </div> */}
+                        </div>
                     </div>
                     <div className={activeTab === 'tab4' ? 'tab-pane fade show active' : 'tab-pane fade'}     >
-                        {/*  <div className='card-body'>
+                        <div className='card-body'>
                             <div className="row show-grid">
                                 <div className="form-group">
                                     <label className="col-md-2 control-label">Grado académico </label>
                                     <div className="col-md-3">
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.escolarCompleta" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.escolarCompleta} />
                                                 <span>Educación Escolar Básica (Completa)</span>
                                             </label>
                                         </div>
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.mediaCompleta" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.mediaCompleta} />
                                                 <span>Educación Media (Completa)</span>
                                             </label>
                                         </div>
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.tecnicaturaCompleta"
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.tecnicaturaCompleta}
                                                     ng-change="habilitarCarrera()" />
                                                 <span>Técnicatura (Especificar Área-Completa)</span>
                                             </label>
                                         </div>
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.universitarioCompleto"
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.universitarioCompleto}
                                                     ng-change="habilitarCarrera()" />
                                                 <span>Nivel Universitario(Completo)</span>
                                             </label>
@@ -1248,32 +1289,32 @@ const Empleados = () => {
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.escolarIncompleta" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.escolarIncompleta} />
                                                 <span>Educación Escolar Básica (Incompleta)</span>
                                             </label>
                                         </div>
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.mediaIncompleta" />
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.mediaIncompleta} />
                                                 <span>Educación Media (Incompleta)</span>
                                             </label>
                                         </div>
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.tecnicaturaIncompleta"
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.tecnicaturaIncompleta}
                                                     ng-change="habilitarCarrera()" />
                                                 <span>Técnicatura (Incompleta)</span>
                                             </label>
                                         </div>
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.universitarioIncompleto"
+                                                <input onChange={onChangeCheckbox} type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.universitarioIncompleto}
                                                     ng-change="habilitarCarrera()" />
                                                 <span>Nivel Universitario(Incompleto)</span>
                                             </label>
@@ -1284,13 +1325,9 @@ const Empleados = () => {
                                     <div className="form-group">
                                         <label>Carrera</label>
                                         <div className="input-group">
-                                            <select
-                                                id="selectCarrera" className="select2"
-                                                ng-model="search.employee.carrera"
-                                                ng-options="obj.descripcion for obj in carreras track by obj.id"
-                                                ng-disabled="selectCarreras">
-                                                <option></option>
-                                            </select>
+                                            {carreras ? (<Select3 options={carreras} valueKey="id" labelKey="descripcion" value={carrera} onChange={changeCarrera} placeholder="Seleccione carrera"
+                                            />) : (<div>Cargando...</div>)}
+
                                             <div className="input-group-btn">
                                                 <button className="btn btn-default" type="button"
                                                     data-toggle="modal"
@@ -1302,25 +1339,25 @@ const Empleados = () => {
                                     </div>
                                 </div>
 
-                                <div className="col-lg-7">
+                               <div className="col-lg-7">
                                     <div className="form-group">
                                         <label>Especifique si se encuentra cursando actualmente
                                             otros estudios</label>
-                                        <textarea rows={4} name="estudios"
-                                            ng-model="search.employee.estudios" className="form-control"
-                                        ></textarea>
+
+                                        <textarea onChange={onChangeTextarea} className='form-control' rows={5} id='estudios' name='estudios' value={funcionario?.estudios || ''} />
+
                                     </div>
-                                </div>
-                                <div className="col-lg-12">
-                                </div>
-                                <div className="form-group">
+                                </div> 
+ 
+                            <div className="form-group">
                                     <label className="col-md-2 control-label">Post Graduación </label>
                                     <div className="col-md-3">
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.especializacion"
+                                                <input onChange={onChangeCheckbox}
+                                                    type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.especializacion}
                                                     ng-change="habilitarPostgrado()" />
                                                 <span>Especialización</span>
                                             </label>
@@ -1328,8 +1365,9 @@ const Empleados = () => {
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.maestria"
+                                                <input onChange={onChangeCheckbox}
+                                                    type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.maestria}
                                                     ng-change="habilitarPostgrado()" />
                                                 <span>Maestría</span>
                                             </label>
@@ -1337,8 +1375,9 @@ const Empleados = () => {
 
                                         <div className="checkbox">
                                             <label>
-                                                <input onChange={onChange} type="checkbox" className="checkbox style-0"
-                                                    ng-model="search.employee.doctorado"
+                                                <input onChange={onChangeCheckbox}
+                                                    type="checkbox" className="checkbox style-0"
+                                                    checked={funcionario?.doctorado}
                                                     ng-change="habilitarPostgrado()" />
                                                 <span>Doctorado</span>
                                             </label>
@@ -1346,20 +1385,19 @@ const Empleados = () => {
                                     </div>
                                 </div>
 
-                                <div className="col-lg-7">
+                                 <div className="col-lg-7">
                                     <div className="form-group">
                                         <label>Descripcion del Post Grado</label>
-                                        <input onChange={onChange} type="text" name="postgrado"
-                                            ng-model="search.employee.postgrado"
+                                        <input onChange={onChangeInput} type="text" name="postgrado"
+                                            value={funcionario?.postgrado || ''}
                                             className="form-control" ng-disabled="postgrado"
                                         ></input>
                                     </div>
-                                </div>
+                                </div>  
                             </div>
 
 
                         </div>
- */}
                     </div>
                 </div>
                 <button type='submit' className='btn btn-secondary'>
