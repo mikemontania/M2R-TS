@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { useState } from 'react';
 import { URL_BASE } from '../Config/Config';
-import './AxiosInteceptor.ts';
+import './AxiosInteceptor';
  
 // Función para hacer una solicitud GET
 export const get = (url: string, params: any = {}, headers: any = {}) => {

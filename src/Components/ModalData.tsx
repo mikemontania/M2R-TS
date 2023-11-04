@@ -17,11 +17,11 @@ const ModalData: React.FC<ModalProps> = ({ title, show, onClose, children, size 
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>{children}</Modal.Body>
-      <Modal.Footer>
+{/*       <Modal.Footer>
         <Button variant="secondary" onClick={onClose}>
           Close
         </Button>
-      </Modal.Footer>
+      </Modal.Footer> */}
     </Modal>
   );
 };

@@ -108,11 +108,25 @@ export interface Sexo {
     descripcion: string;
 }
 
+export interface empleadoFamilia {
+    estadoCivil: EstadoCivil
+    fechaNacimiento: string
+    id: number
+    nombre: string
+    observacion: any
+    tipoFamilia: TipoFamilia
+}
+
+
+export interface TipoFamilia {
+    id: number
+    descripcion: string
+}
 
 
 
 export interface Funcionario {
-    id?:number,
+    id?: number,
     legajo?: number,
     activo: string;
     anticipo: number;
@@ -130,7 +144,7 @@ export interface Funcionario {
     direccion: string;
     doctorado: boolean;
     email: string;
-    empleadoFamilias: any;
+    empleadoFamilias?: empleadoFamilia[];
     empresasId: number;
     escolarCompleta: boolean;
     escolarIncompleta: boolean;
@@ -143,8 +157,7 @@ export interface Funcionario {
     fechaSalida: string;
     frecuenciaId: any;
     frecuenciaPago?: FrecuenciaPago;
-    honorarioActual: number;
-    honorariosProfesionales: any;
+    honorariosProfesionales?: SalarioDetalle[];
     horarios?: Horario;
     imagen: string;
     ingresoIps: string;
@@ -162,7 +175,7 @@ export interface Funcionario {
     observacion: string;
     pais?: Pais;
     path: string;
-    personasHijos: any;
+    personasHijos?: PersonaHijo[];
     porcentajeIps?: PorcentajeIps;
     postgrado: any;
     salariosDetalle?: SalarioDetalle[];
@@ -170,7 +183,7 @@ export interface Funcionario {
     sector?: Sector;
     sectorInt: any;
     semanalFijo: string;
-    sexo?: Sexo;
+    sexo?: string;
     subSector?: SubSector;
     subSectorInt: any;
     sucursales?: Sucursal;
@@ -190,14 +203,14 @@ export interface Horario {
     id: number
     turnos: Turno
     subSector: SubSector
-    horaDesde: string
-    horaHasta: string
     empresasId: number
-    tolerancia: string
-    sabEntrada: any
-    sabSalida: any
-    domEntrada: any
-    domSalida: any
+    horaDesde: Date | null
+    horaHasta: Date | null
+    tolerancia: Date | null
+    sabEntrada: Date | null
+    sabSalida: Date | null
+    domEntrada: Date | null
+    domSalida: Date | null
     rango: number
     tolMin: number
     tipo: any
@@ -238,8 +251,25 @@ export interface Carrera {
     descripcion: string
 }
 
-export const SALARIOINICIAL:SalarioDetalle ={ 
-    fecha:new Date().toISOString().slice(0, 10),
+
+
+export interface PersonaHijo {
+    id?: number,
+    ci: string,
+    estadoCivil: EstadoCivil,
+    fechaNacimiento: string,
+    nombre: string,
+    sexo: string
+}
+
+
+
+
+
+
+
+export const SALARIOINICIAL: SalarioDetalle = {
+    fecha: new Date().toISOString().slice(0, 10),
     monto: 0,
     observacion: '',
     activo: 'S',
@@ -268,7 +298,6 @@ export const FUNCIONARIOINICIAL: Funcionario = {
     activo: '',
     empresasId: 0,
     salarioActual: 0,
-    honorarioActual: 0,
     anticipo: 0,
     observacion: '',
     imagen: '',
@@ -292,10 +321,42 @@ export const FUNCIONARIOINICIAL: Funcionario = {
     ctaBanco: '',
     semanalFijo: '',
     ipsBase: null,
-    personasHijos: null,
-    empleadoFamilias: null,
-    honorariosProfesionales: null,
+    personasHijos: [],
+    empleadoFamilias: [],
+    honorariosProfesionales: [],
     sectorInt: null,
     subSectorInt: null,
     frecuenciaId: null,
-};
+}; 
+ 
+export interface ConceptosPreciosModel {
+     id: number | null,
+     activo:string,
+    conceptos: Concepto,
+    precioConceptoses: PreciosConceptos[]
+  }
+  
+  export interface Concepto {
+    id: number
+    descripcion: string
+    tipoConcepto: number
+    conceptosrrhhId: number
+    mostrar: number
+  }
+  
+  export interface PreciosConceptos {
+    id: number | null,
+    subSectorConcepto: number,
+    tipoDia: TipoDia,
+    cantidadDesde: number,
+    cantidadHasta: number,
+    horaDesde: Date| null,
+    horaHasta: Date| null,
+    precio: number,
+  }
+  
+  export interface TipoDia {
+    id: number
+    descripcion: string
+  }
+  

@@ -14,14 +14,14 @@ interface MySelectProps<T extends Record<string, any>> {
 const Select3 = <T extends Record<string, any>>({ options, valueKey, labelKey, value, onChange, placeholder = 'Seleccione una opción', isDisabled = false }: MySelectProps<T>): JSX.Element => {
     const selectOptions = options.map((option) => ({
         value: option[valueKey],
-        label: option[labelKey] as string,
+        label: (option[labelKey] as string).toUpperCase() // Convertir a mayúsculas
     }));
 
     return (
         <Select
             placeholder={placeholder}
             options={selectOptions}
-            value={value ? { value: value[valueKey], label: value[labelKey] as string } : null}
+            value={value ? { value: value[valueKey], label: (value[labelKey] as string).toUpperCase() } : null} // Convertir a mayúsculas
             isDisabled={isDisabled}
             onChange={(newValue) => {
                 if (!newValue) {
@@ -32,7 +32,9 @@ const Select3 = <T extends Record<string, any>>({ options, valueKey, labelKey, v
                 if (selectedOption) {
                     onChange(selectedOption);
                 }
+
             }}
+            onInputChange={(inputValue) => inputValue.toUpperCase()} // Convertir a mayúsculas
         />
     );
 };
